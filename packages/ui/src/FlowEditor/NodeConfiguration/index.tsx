@@ -1,5 +1,5 @@
 import { Box, Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, InputLabel, ListItemText, MenuItem, OutlinedInput, Select, Stack, TextField } from "@mui/material"
-import type { NodeBlueprint, NodeConfigField } from "@script-graph/core";
+import type { NodeBlueprint, NodeConfigField } from "@script_graph/core";
 import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import type { Node } from "@xyflow/react";
 

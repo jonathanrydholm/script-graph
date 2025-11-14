@@ -29,7 +29,7 @@ import type {
     NodeBlueprint,
     NodeConfig,
     ProjectFlow,
-} from '@script-graph/core';
+} from '@script_graph/core';
 import { Stack } from '@mui/material';
 import Blueprints from './Blueprints';
 import { useSnackbar } from 'notistack';

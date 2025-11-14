@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import type { NodeStatus, TimestampedLog } from '@script-graph/core';
+import type { NodeStatus, TimestampedLog } from '@script_graph/core';
 import {
     Button,
     Drawer,

@@ -1,4 +1,4 @@
-import type { ProjectReference } from '@script-graph/core';
+import type { ProjectReference } from '@script_graph/core';
 import {
     Box,
     Divider,

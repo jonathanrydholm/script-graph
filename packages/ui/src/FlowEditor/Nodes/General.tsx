@@ -1,4 +1,4 @@
-import type { NodeBlueprint } from '@script-graph/core';
+import type { NodeBlueprint } from '@script_graph/core';
 import { Badge, IconButton, Stack, Tooltip } from '@mui/material';
 import { Handle, Position, type Node, type NodeProps } from '@xyflow/react';
 import { useMemo } from 'react';

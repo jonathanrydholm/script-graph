@@ -1,5 +1,5 @@
 import { YarnInstall } from './Nodes';
-import { Plugin } from '@script-graph/core';
+import { Plugin } from '@script_graph/core';
 
 const plugin: Plugin = {
     nodes: [YarnInstall],

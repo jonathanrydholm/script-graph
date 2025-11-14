@@ -1,4 +1,4 @@
-import { SGNode } from '@script-graph/core';
+import { SGNode } from '@script_graph/core';
 
 export const Trigger: SGNode = {
     name: 'Trigger',

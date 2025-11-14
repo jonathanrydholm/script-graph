@@ -1,4 +1,4 @@
-import { NodeConfigStringField, SGNode } from '@script-graph/core';
+import { NodeConfigStringField, SGNode } from '@script_graph/core';
 import { spawn } from 'child_process';
 
 export const YarnInstall: SGNode = {

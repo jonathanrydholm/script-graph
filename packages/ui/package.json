@@ -18,7 +18,7 @@
         "@xyflow/react": "12.9.1",
         "lucide-react": "0.548.0",
         "react-router-dom": "7.9.5",
-        "@script-graph/core": "*",
+        "@script_graph/core": "*",
         "notistack": "3.0.2"
     },
     "devDependencies": {

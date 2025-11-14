@@ -6,7 +6,7 @@ import {
     type NodeBlueprint,
     type ProjectFlow,
     type ProjectReference,
-} from '@script-graph/core';
+} from '@script_graph/core';
 import Projects from './Projects';
 import ProjectFlows from './ProjectFlows';
 import { useEffect, useState } from 'react';

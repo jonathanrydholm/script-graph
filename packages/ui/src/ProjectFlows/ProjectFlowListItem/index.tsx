@@ -7,7 +7,7 @@ import {
     ListItemText,
     Tooltip,
 } from '@mui/material';
-import type { ProjectFlow } from '@script-graph/core';
+import type { ProjectFlow } from '@script_graph/core';
 import { Play, Workflow } from 'lucide-react';
 import { useCallback, useState } from 'react';
 

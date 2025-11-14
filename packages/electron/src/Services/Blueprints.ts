@@ -9,7 +9,7 @@ import {
     SGNodeToBlueprint,
     TimestampedLog,
     Plugin,
-} from '@script-graph/core';
+} from '@script_graph/core';
 import { inject, injectable } from 'inversify';
 import { IBlueprintService, IElectronApp, IExecutableNode } from './types';
 import { join } from 'path';
@@ -49,8 +49,8 @@ export class BlueprintService implements IBlueprintService {
             .filter(
                 (dep) =>
                     /** Make sure to not include the core package since it is always loaded as part of the build. */
-                    dep !== '@script-graph/core' &&
-                    dep.startsWith('@script-graph/'),
+                    dep !== '@script_graph/core' &&
+                    dep.startsWith('@script_graph/'),
             )
             .map((dep) => {
                 console.log(`Registered plugin ${dep}`);
@@ -82,7 +82,7 @@ export class BlueprintService implements IBlueprintService {
             await writeFile(
                 packageJsonPath,
                 JSON.stringify({
-                    name: 'script-graph-plugins',
+                    name: 'script_graph-plugins',
                     version: '1.0.0',
                     dependencies,
                 }),

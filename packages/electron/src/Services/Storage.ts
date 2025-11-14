@@ -6,7 +6,7 @@ import {
     IdentifiedProjectConfig,
     ProjectFlow,
     ProjectReference,
-} from '@script-graph/core';
+} from '@script_graph/core';
 import { IStorage } from './types';
 import { readFile, writeFile } from 'fs/promises';
 

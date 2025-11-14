@@ -1,4 +1,4 @@
-import { NodeConfigStringField, SGNode } from '@script-graph/core';
+import { NodeConfigStringField, SGNode } from '@script_graph/core';
 
 export const Sleep: SGNode = {
     name: 'Sleep',

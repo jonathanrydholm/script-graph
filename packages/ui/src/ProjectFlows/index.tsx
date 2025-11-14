@@ -14,7 +14,7 @@ import { StoreContext } from '../Providers/Store';
 import NewFlowDialog from './NewFlowDialog';
 import { NodeLogContext } from '../Providers/NodeLogs';
 import ProjectFlowListItem from './ProjectFlowListItem';
-import type { ProjectFlow } from '@script-graph/core';
+import type { ProjectFlow } from '@script_graph/core';
 
 type SearchParams = {
     id: string;

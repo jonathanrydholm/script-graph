@@ -1,4 +1,4 @@
-import type { NodeBlueprint } from "@script-graph/core"
+import type { NodeBlueprint } from "@script_graph/core"
 import { Hexagon } from 'lucide-react'
 import { List, ListItemButton, ListItemIcon, ListItemText, Stack } from "@mui/material"
 import { useEffect, useMemo, useState } from "react"

@@ -1,5 +1,5 @@
 import { createContext, useState } from 'react';
-import type { IdentifiedProjectConfig } from '@script-graph/core';
+import type { IdentifiedProjectConfig } from '@script_graph/core';
 
 export interface IStoreState {
     selectedProject: IdentifiedProjectConfig | null

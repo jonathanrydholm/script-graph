@@ -8,7 +8,7 @@ import {
     SerializedSGNode,
     SGEdge,
     SGNode,
-} from '@script-graph/core';
+} from '@script_graph/core';
 import { BrowserWindow } from 'electron';
 
 export interface IStorage {

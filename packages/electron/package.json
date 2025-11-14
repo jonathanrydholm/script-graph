@@ -38,7 +38,7 @@
     },
     "dependencies": {
         "electron-squirrel-startup": "^1.0.1",
-        "@script-graph/core": "*",
-        "@script-graph/nodejs": "*"
+        "@script_graph/core": "*",
+        "@script_graph/nodejs": "*"
     }
 }
