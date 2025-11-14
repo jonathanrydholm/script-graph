@@ -1,0 +1,27 @@
+{
+    "name": "@script-graph/nodejs",
+    "version": "0.0.1",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "type": "module",
+    "files": [
+        "package.json",
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsup"
+    },
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs"
+        }
+    },
+    "dependencies": {
+        "@script-graph/core": "*"
+    },
+    "devDependencies": {
+        "typescript": "~5.9.3",
+        "tsup": "8.5.0"
+    }
+}

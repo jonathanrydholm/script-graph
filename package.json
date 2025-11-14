@@ -1,0 +1,31 @@
+{
+    "name": "flux-watch-workspace",
+    "author": {
+        "name": "Jonathan Rydholm",
+        "email": "jonathan.rydholm@afry.com"
+    },
+    "type": "module",
+    "private": true,
+    "workspaces": {
+        "packages": [
+            "packages/ui",
+            "packages/electron",
+            "packages/plugins/*"
+        ]
+    },
+    "scripts": {
+        "ui": "yarn workspace ui dev",
+        "electron": "yarn workspace electron start",
+        "plugin": "yarn workspace @script-graph/core build && yarn workspace @script-graph/nodejs build"
+    },
+    "dependencies": {
+        "inversify": "7.10.4",
+        "reflect-metadata": "0.2.2"
+    },
+    "devDependencies": {
+        "@types/node": "^22"
+    },
+    "engines": {
+        "node": ">=22.0.0"
+    }
+}
