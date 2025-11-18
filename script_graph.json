@@ -1,0 +1,55 @@
+{
+  "flows": [
+    {
+      "id": "0d0a8f85-e6ff-4b14-abce-ca96253ee47b",
+      "edges": [
+        {
+          "id": "xy-edge__ac63959f-9c02-4ebd-b01f-5c6adb32544c0-4536a7ce-4c0f-4992-aefd-be700db50f430",
+          "source": "ac63959f-9c02-4ebd-b01f-5c6adb32544c",
+          "sourceHandle": "0",
+          "target": "4536a7ce-4c0f-4992-aefd-be700db50f43",
+          "targetHandle": "0"
+        }
+      ],
+      "name": "Git",
+      "nodes": [
+        {
+          "config": {
+            "fields": []
+          },
+          "graphics": {
+            "x": 0,
+            "y": 0
+          },
+          "id": "ac63959f-9c02-4ebd-b01f-5c6adb32544c",
+          "inputs": [],
+          "name": "Trigger",
+          "outputs": [
+            {
+              "type": "void"
+            }
+          ],
+          "type": "trigger"
+        },
+        {
+          "config": {
+            "fields": []
+          },
+          "graphics": {
+            "x": 287,
+            "y": 107
+          },
+          "id": "4536a7ce-4c0f-4992-aefd-be700db50f43",
+          "inputs": [
+            {
+              "type": "void"
+            }
+          ],
+          "name": "Git pull",
+          "outputs": [],
+          "type": "git-pull"
+        }
+      ]
+    }
+  ]
+}

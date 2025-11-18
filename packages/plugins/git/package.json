@@ -1,0 +1,21 @@
+{
+    "name": "@script_graph/git",
+    "version": "0.0.1",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "plugin-cli build-plugin",
+        "publish": "plugin-cli publish-plugin"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.39.1",
+        "@types/node": "^24.10.0",
+        "eslint": "^9.39.1",
+        "typescript": "~5.9.3",
+        "globals": "^16.5.0",
+        "typescript-eslint": "^8.46.3",
+        "@script_graph/plugin-cli": "^0.0.1",
+        "@script_graph/plugin-types": "^0.0.1"
+    }
+}

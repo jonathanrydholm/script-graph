@@ -101,6 +101,7 @@ const NewFlowDialog = ({ onClose, open }: INewFlowDialog) => {
                                                     ],
                                                     name: 'Trigger',
                                                     type: 'trigger',
+                                                    tags: [],
                                                 },
                                             ],
                                         },

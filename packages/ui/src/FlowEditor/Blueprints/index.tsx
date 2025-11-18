@@ -1,38 +1,86 @@
-import type { NodeBlueprint } from "@script_graph/core"
-import { Hexagon } from 'lucide-react'
-import { List, ListItemButton, ListItemIcon, ListItemText, Stack } from "@mui/material"
-import { useEffect, useMemo, useState } from "react"
+import { Store, Blocks, HardDrive } from 'lucide-react';
+import { IconButton, List, Stack, TextField, Tooltip } from '@mui/material';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import type { SerializedPlugin } from '@script_graph/general-types';
+import PluginListItem from './PluginListItem';
 
 const Blueprints = () => {
+    const [plugins, setPlugins] = useState<SerializedPlugin[]>([]);
 
-    const [ blueprints, setBlueprints ] = useState<NodeBlueprint[]>([])
+    const [view, setView] = useState<
+        'installed-plugins' | 'marketplace' | 'custom-plugins'
+    >('installed-plugins');
 
     useEffect(() => {
-        window.api.getInstalledNodes().then(setBlueprints)
-    }, [])
+        window.api.getRegisteredPlugins().then(setPlugins);
+        window.api.onPluginsModified((serializedPlugins) => {
+            console.log(serializedPlugins);
+            setPlugins(JSON.parse(serializedPlugins) as SerializedPlugin[]);
+        });
+    }, []);
 
     const renderedList = useMemo(() => {
-            return blueprints.map(blueprint => (
-                <ListItemButton key={blueprint.type} draggable
-                    onDragStart={(e) => {
-                        e.stopPropagation();
-                        e.dataTransfer.setData('application/json', JSON.stringify(blueprint));
-                    }}>
-                    <ListItemIcon>
-                        <Hexagon color="#AFAFB1" />
-                    </ListItemIcon>
-                    <ListItemText primary={blueprint.name} sx={{ color: '#AFAFB1' }} />
-                </ListItemButton>
-            ))
-        }, [blueprints])
+        return plugins.map((plugin) => <PluginListItem plugin={plugin} />);
+    }, [plugins]);
+
+    const renderedTabs = useMemo(() => {
+        return (
+            <Stack direction="row">
+                <Tooltip title="Installed Plugins">
+                    <IconButton>
+                        <HardDrive
+                            color={
+                                view === 'installed-plugins'
+                                    ? '#FFE599'
+                                    : '#AFAFB1'
+                            }
+                        />
+                    </IconButton>
+                </Tooltip>
+                <Tooltip title="Marketplace">
+                    <IconButton>
+                        <Store
+                            color={
+                                view === 'marketplace' ? '#FFE599' : '#AFAFB1'
+                            }
+                        />
+                    </IconButton>
+                </Tooltip>
+                <Tooltip title="Custom Plugins">
+                    <IconButton>
+                        <Blocks
+                            color={
+                                view === 'custom-plugins'
+                                    ? '#FFE599'
+                                    : '#AFAFB1'
+                            }
+                        />
+                    </IconButton>
+                </Tooltip>
+            </Stack>
+        );
+    }, [view]);
 
     return (
-        <Stack flex={1}>
-            <List>
-                {renderedList}
-            </List>
+        <Stack flex={1} gap={1}>
+            {renderedTabs}
+            <TextField
+                fullWidth
+                label={'Search'}
+                type="text"
+                variant="outlined"
+                size="small"
+                placeholder="Search for nodes"
+                sx={{ paddingX: '8px' }}
+                slotProps={{
+                    input: {
+                        sx: { color: '#fff' },
+                    },
+                }}
+            />
+            <List disablePadding>{renderedList}</List>
         </Stack>
-    )
-}
+    );
+};
 
-export default Blueprints
+export default Blueprints;

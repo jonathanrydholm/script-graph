@@ -5,7 +5,7 @@
     "description": "My Electron application description",
     "main": ".vite/build/main.js",
     "scripts": {
-        "start": "electron-forge start",
+        "start": "DEV=true electron-forge start",
         "package": "electron-forge package",
         "make": "electron-forge make",
         "publish": "electron-forge publish",
@@ -37,8 +37,10 @@
         "vite": "^5.4.21"
     },
     "dependencies": {
+        "@script_graph/flow-runtime": "^0.0.1",
+        "@script_graph/plugin-installer": "^0.0.1",
+        "@script_graph/logger": "^0.0.1",
         "electron-squirrel-startup": "^1.0.1",
-        "@script_graph/core": "*",
-        "@script_graph/nodejs": "*"
+        "@script_graph/core": "*"
     }
 }

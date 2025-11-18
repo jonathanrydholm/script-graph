@@ -1,18 +1,18 @@
 import { inject, injectable } from 'inversify';
 import { ipcMain, dialog } from 'electron';
 import {
-    CompiledFlowNode,
-    compileFlow,
     IdentifiedProjectConfig,
     ProjectFlow,
     ProjectReference,
+    SGNode,
 } from '@script_graph/core';
+import { IElectronApp, IIpcHandler, IStorage } from './types';
+import { FlowRuntime } from '@script_graph/flow-runtime';
+import { PluginInstaller } from '@script_graph/plugin-installer';
 import {
-    IBlueprintService,
-    IExecutableNode,
-    IIpcHandler,
-    IStorage,
-} from './types';
+    SerializedPlugin,
+    TimestampedNodeLog,
+} from '@script_graph/general-types';
 
 @injectable()
 export class IpcHandler implements IIpcHandler {
@@ -20,7 +20,9 @@ export class IpcHandler implements IIpcHandler {
 
     constructor(
         @inject('IStorage') private storage: IStorage,
-        @inject('IBlueprintService') private blueprints: IBlueprintService,
+        @inject('FlowRuntime') private flowRuntime: FlowRuntime,
+        @inject('PluginInstaller') private pluginInstaller: PluginInstaller,
+        @inject('IElectronApp') private app: IElectronApp,
     ) {}
 
     setReady(): void {
@@ -56,11 +58,21 @@ export class IpcHandler implements IIpcHandler {
             this.storage.createProject(project),
         );
 
-        ipcMain.handle('getInstalledNodes', () =>
-            this.blueprints
-                .getBlueprints()
-                .filter((bp) => bp.type !== 'trigger'),
-        );
+        ipcMain.handle('getRegisteredPlugins', async () => {
+            return this.pluginInstaller
+                .getRegisteredPlugins()
+                .map((plugin) => ({
+                    ...plugin,
+                    nodes: plugin.nodes.map((node) => ({
+                        config: node.config,
+                        inputs: node.inputs,
+                        name: node.name,
+                        outputs: node.outputs,
+                        tags: node.tags,
+                        type: node.type,
+                    })) as Omit<SGNode, 'execute'>[],
+                })) as SerializedPlugin[];
+        });
 
         ipcMain.handle('getFlow', (_, projectPath: string, flowId: string) =>
             this.storage.getFlow(projectPath, flowId),
@@ -79,51 +91,29 @@ export class IpcHandler implements IIpcHandler {
                     (await this.storage.getFlow(projectPath, id)) || null;
 
                 if (flow) {
-                    const { nodes, roots } = compileFlow(
+                    await this.flowRuntime.ExecuteFlow(
                         flow.nodes,
                         flow.edges,
+                        (log) => {
+                            this.app
+                                .getMainWindow()
+                                .webContents.send(
+                                    'node-log',
+                                    JSON.stringify({
+                                        ...log,
+                                        timestamp: new Date().getTime(),
+                                    } as TimestampedNodeLog),
+                                );
+                        },
+                        (nodeStatus) => {
+                            this.app
+                                .getMainWindow()
+                                .webContents.send(
+                                    'node-status',
+                                    JSON.stringify(nodeStatus),
+                                );
+                        },
                     );
-
-                    const nodeMap: Record<string, IExecutableNode | null> =
-                        Object.entries(nodes).reduce(
-                            (acc, [nodeId, node]) => ({
-                                ...acc,
-                                [nodeId]:
-                                    this.blueprints.getExecutableNode(node),
-                            }),
-                            {},
-                        );
-
-                    const recursivelyJoin = (parent: CompiledFlowNode) => {
-                        parent.children.forEach((child) => {
-                            nodeMap[parent.id].addChild(
-                                nodeMap[child.node.id],
-                                child.connections,
-                            );
-                            recursivelyJoin(child.node);
-                        });
-                    };
-
-                    roots.forEach(recursivelyJoin);
-
-                    const nonTriggers = roots.filter(
-                        (root) => nodeMap[root.id].getNode().type !== 'trigger',
-                    );
-                    const triggers = roots.filter(
-                        (root) => nodeMap[root.id].getNode().type === 'trigger',
-                    );
-
-                    try {
-                        for (const root of nonTriggers) {
-                            await nodeMap[root.id].run([]);
-                        }
-
-                        for (const root of triggers) {
-                            await nodeMap[root.id].run([]);
-                        }
-                    } catch (e) {
-                        console.error('Yoo', e);
-                    }
                 }
             },
         );

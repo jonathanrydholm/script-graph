@@ -16,7 +16,7 @@ contextBridge.exposeInMainWorld('api', {
     getFlow: (projectId: string, flowId: string) =>
         ipcRenderer.invoke('getFlow', projectId, flowId),
 
-    getInstalledNodes: () => ipcRenderer.invoke('getInstalledNodes'),
+    getRegisteredPlugins: () => ipcRenderer.invoke('getRegisteredPlugins'),
 
     createProject: (config: ProjectReference) =>
         ipcRenderer.invoke('createProject', config),
@@ -42,6 +42,15 @@ contextBridge.exposeInMainWorld('api', {
         ipcRenderer.on('node-status', listener);
         return () => {
             ipcRenderer.removeListener('node-status', listener);
+        };
+    },
+
+    onPluginsModified: (callback: (plugins: string) => void) => {
+        const listener = (_: unknown, plugins: string) => callback(plugins);
+
+        ipcRenderer.on('onPluginsModified', listener);
+        return () => {
+            ipcRenderer.removeListener('onPluginsModified', listener);
         };
     },
 });

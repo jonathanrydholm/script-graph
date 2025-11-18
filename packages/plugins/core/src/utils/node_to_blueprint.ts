@@ -1,4 +1,4 @@
-import { NodeBlueprint, SGNode } from "types";
+import { NodeBlueprint, SGNode } from 'types';
 
 export const SGNodeToBlueprint = (node: SGNode): NodeBlueprint => {
     return {
@@ -7,5 +7,6 @@ export const SGNodeToBlueprint = (node: SGNode): NodeBlueprint => {
         outputs: node.outputs,
         type: node.type,
         config: node.config,
-    }
-}
+        tags: node.tags,
+    };
+};

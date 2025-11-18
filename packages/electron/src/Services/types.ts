@@ -1,6 +1,7 @@
 import {
     CentralConfig,
     IdentifiedProjectConfig,
+    LoadedPlugin,
     NodeBlueprint,
     ProjectFlow,
     ProjectReference,
@@ -10,6 +11,7 @@ import {
     SGNode,
 } from '@script_graph/core';
 import { BrowserWindow } from 'electron';
+import { Logger as PinoLogger } from 'pino';
 
 export interface IStorage {
     init(): void;
@@ -39,13 +41,6 @@ export interface IElectronApp {
     getMainWindow(): BrowserWindow;
 }
 
-export interface IBlueprintService {
-    loadPlugins(): Promise<void>;
-    getSGNode(type: string): SGNode | null;
-    getExecutableNode(serializedNode: SerializedSGNode): IExecutableNode | null;
-    getBlueprints(): NodeBlueprint[];
-}
-
 export interface IExecutableNode {
     run(inputs: ResolvedIO[]): Promise<void>;
     getNode(): SerializedSGNode;
@@ -56,4 +51,15 @@ export interface IExecutableNode {
         parent: IExecutableNode,
         value: ResolvedIO[],
     ): Promise<void>;
+}
+
+export interface IConfiguration {
+    /** Gives the current environment */
+    environment(): 'dev' | 'prod';
+
+    /** Returns the path to the plugin directory */
+    pluginDirectoryPath(): string;
+
+    /** Returns the path to the package.json in the plugin directory */
+    pluginPackageJsonPath(): string;
 }

@@ -3,13 +3,13 @@ import { Outlet, Route, Routes } from 'react-router-dom';
 import FlowEditor from './FlowEditor';
 import {
     type IdentifiedProjectConfig,
-    type NodeBlueprint,
     type ProjectFlow,
     type ProjectReference,
 } from '@script_graph/core';
 import Projects from './Projects';
 import ProjectFlows from './ProjectFlows';
 import { useEffect, useState } from 'react';
+import { type SerializedPlugin } from '@script_graph/general-types';
 
 declare global {
     interface Window {
@@ -20,7 +20,7 @@ declare global {
                 project: ProjectReference,
             ) => Promise<ProjectReference>;
             getProject: (path: string) => Promise<IdentifiedProjectConfig>;
-            getInstalledNodes: () => Promise<NodeBlueprint[]>;
+            getRegisteredPlugins: () => Promise<SerializedPlugin[]>;
             getProjectReferences: () => Promise<ProjectReference[]>;
             updateProject: (
                 config: IdentifiedProjectConfig,
@@ -44,6 +44,10 @@ declare global {
 
             onNodeStatus: (
                 callback: (statusMessage: string) => void,
+            ) => () => void;
+
+            onPluginsModified: (
+                callback: (plugins: string) => void,
             ) => () => void;
         };
     }

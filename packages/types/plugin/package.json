@@ -1,0 +1,33 @@
+{
+    "name": "@script_graph/plugin-types",
+    "version": "0.0.1",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "tsup"
+    },
+    "files": [
+        "package.json",
+        "dist"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "keywords": [],
+    "author": {
+        "name": "Jonathan Rydholm",
+        "email": "jonathanrydholm@outlook.com"
+    },
+    "license": "MIT",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs"
+        }
+    },
+    "devDependencies": {
+        "typescript": "~5.9.3",
+        "tsup": "8.5.0"
+    }
+}

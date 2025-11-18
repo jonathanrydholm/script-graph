@@ -1,0 +1,43 @@
+{
+    "name": "@script_graph/logger",
+    "version": "0.0.1",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "tsup"
+    },
+    "files": [
+        "package.json",
+        "dist"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "keywords": [],
+    "author": {
+        "name": "Jonathan Rydholm",
+        "email": "jonathanrydholm@outlook.com"
+    },
+    "license": "MIT",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs"
+        }
+    },
+    "dependencies": {
+        "inversify": "7.10.4",
+        "pino": "10.1.0",
+        "pino-pretty": "13.1.2"
+    },
+    "devDependencies": {
+        "typescript": "~5.9.3",
+        "tsup": "8.5.0",
+        "@eslint/js": "^9.39.1",
+        "@types/node": "^24.10.0",
+        "eslint": "^9.39.1",
+        "globals": "^16.5.0",
+        "typescript-eslint": "^8.46.3"
+    }
+}

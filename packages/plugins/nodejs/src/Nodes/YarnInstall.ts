@@ -4,6 +4,7 @@ import { spawn } from 'child_process';
 export const YarnInstall: SGNode = {
     name: 'Yarn Install',
     type: 'yarn_install',
+    tags: ['yarn', 'install'],
     inputs: [
         {
             type: 'void',

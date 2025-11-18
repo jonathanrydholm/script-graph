@@ -289,6 +289,7 @@ const FlowEditor = () => {
                                                 w: node.width!,
                                                 h: node.height!,
                                             },
+                                            tags: [],
                                             id: node.id,
                                             inputs: node.data.inputs as IO[],
                                             name: node.data.name as string,

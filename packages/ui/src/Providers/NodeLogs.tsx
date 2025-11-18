@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import type { NodeStatus, TimestampedLog } from '@script_graph/core';
 import {
     Button,
     Drawer,
@@ -9,9 +8,13 @@ import {
     ListItemText,
 } from '@mui/material';
 import { TriangleAlert, Info, OctagonAlert } from 'lucide-react';
+import type {
+    NodeStatus,
+    TimestampedNodeLog,
+} from '@script_graph/general-types';
 
 export interface INodeLogState {
-    logsById: Record<string, TimestampedLog[]>;
+    logsById: Record<string, TimestampedNodeLog[]>;
     statusById: Record<string, NodeStatus>;
     drawerOpen: boolean;
     nodeFilter?: string;
@@ -64,7 +67,7 @@ export const NodeLogProvider = ({ children }: INodeLogProvider) => {
 
     useEffect(() => {
         const unsubscribeFromLogs = window.api.onNodeLog((stringifiedLog) => {
-            const log: TimestampedLog = JSON.parse(stringifiedLog);
+            const log: TimestampedNodeLog = JSON.parse(stringifiedLog);
             setNodeLog((prev) => {
                 return {
                     ...prev,

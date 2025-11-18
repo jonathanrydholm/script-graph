@@ -1,8 +1,10 @@
-import { injectable } from 'inversify';
+import { inject, injectable } from 'inversify';
 import { app, BrowserWindow } from 'electron';
 import started from 'electron-squirrel-startup';
 import { join } from 'path';
-import { IElectronApp } from './types';
+import { IConfiguration, IElectronApp } from './types';
+import { Logger } from 'pino';
+import { ILogger } from '@script_graph/logger';
 
 @injectable()
 export class ElectronApp implements IElectronApp {
@@ -10,9 +12,18 @@ export class ElectronApp implements IElectronApp {
 
     private mainWindow: BrowserWindow;
 
+    private logger: Logger;
+
+    constructor(
+        @inject('ILogger') logger: ILogger,
+        @inject('IConfiguration') private config: IConfiguration,
+    ) {
+        this.logger = logger.getLogger('ElectronApp');
+    }
+
     async init(): Promise<void> {
         if (started) {
-            console.log('App already started, quitting.');
+            this.logger.info('App already started, quitting.');
             app.quit();
         }
 
@@ -43,7 +54,7 @@ export class ElectronApp implements IElectronApp {
     }
 
     private createWindow = async () => {
-        console.log('App is ready, creating window');
+        this.logger.info('App is ready, creating window');
 
         this.mainWindow = new BrowserWindow({
             width: 1920,
@@ -57,17 +68,12 @@ export class ElectronApp implements IElectronApp {
             },
         });
 
-        const dev = 'http://localhost:5173';
-
         // and load the index.html of the app.
-        if (dev) {
-            await this.mainWindow.loadURL(dev);
+        if (this.config.environment() === 'dev') {
+            await this.mainWindow.loadURL('http://localhost:5173');
         } else {
             await this.mainWindow.loadFile(
-                join(
-                    __dirname,
-                    `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`,
-                ),
+                join(__dirname, '..', 'ui', 'dist', 'index.html'),
             );
         }
     };

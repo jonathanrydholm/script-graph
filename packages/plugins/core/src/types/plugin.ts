@@ -1,5 +1,10 @@
-import { SGNode } from "./node"
+import { SGNode } from './node';
 
 export type Plugin = {
-    nodes: SGNode[]
-}
+    nodes: SGNode[];
+};
+
+export type LoadedPlugin = Plugin & {
+    tags: string[];
+    name: string;
+};

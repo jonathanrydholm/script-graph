@@ -10,13 +10,18 @@
         "packages": [
             "packages/ui",
             "packages/electron",
-            "packages/plugins/*"
+            "packages/flow-runtime",
+            "packages/logger",
+            "packages/plugin-installer",
+            "packages/plugin-cli",
+            "packages/plugins/*",
+            "packages/types/*"
         ]
     },
     "scripts": {
         "ui": "yarn workspace ui dev",
         "electron": "yarn workspace electron start",
-        "plugin": "yarn workspace @script-graph/core build && yarn workspace @script-graph/nodejs build"
+        "plugin": "yarn workspace @script_graph/core build && yarn workspace @script_graph/nodejs build"
     },
     "dependencies": {
         "inversify": "7.10.4",
