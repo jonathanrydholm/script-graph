@@ -1,10 +1,14 @@
 import { Store, Blocks, HardDrive } from 'lucide-react';
 import { IconButton, List, Stack, TextField, Tooltip } from '@mui/material';
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { SerializedPlugin } from '@script_graph/general-types';
 import PluginListItem from './PluginListItem';
 
-const Blueprints = () => {
+interface IBlueprints {
+    onPluginsModified: () => void;
+}
+
+const Blueprints = ({ onPluginsModified }: IBlueprints) => {
     const [plugins, setPlugins] = useState<SerializedPlugin[]>([]);
 
     const [view, setView] = useState<
@@ -14,8 +18,8 @@ const Blueprints = () => {
     useEffect(() => {
         window.api.getRegisteredPlugins().then(setPlugins);
         window.api.onPluginsModified((serializedPlugins) => {
-            console.log(serializedPlugins);
             setPlugins(JSON.parse(serializedPlugins) as SerializedPlugin[]);
+            onPluginsModified();
         });
     }, []);
 

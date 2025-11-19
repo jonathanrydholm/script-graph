@@ -3,8 +3,7 @@ import { app, BrowserWindow } from 'electron';
 import started from 'electron-squirrel-startup';
 import { join } from 'path';
 import { IConfiguration, IElectronApp } from './types';
-import { Logger } from 'pino';
-import { ILogger } from '@script_graph/logger';
+import { ChildLogger, ILogger } from '@script_graph/logger';
 
 @injectable()
 export class ElectronApp implements IElectronApp {
@@ -12,7 +11,7 @@ export class ElectronApp implements IElectronApp {
 
     private mainWindow: BrowserWindow;
 
-    private logger: Logger;
+    private logger: ChildLogger;
 
     constructor(
         @inject('ILogger') logger: ILogger,

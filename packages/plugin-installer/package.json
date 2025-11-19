@@ -29,7 +29,8 @@
     "dependencies": {
         "inversify": "7.10.4",
         "adm-zip": "0.5.16",
-        "chokidar": "4.0.3"
+        "chokidar": "4.0.3",
+        "@script_graph/logger": "^0.0.1"
     },
     "devDependencies": {
         "@types/adm-zip": "0.5.7",

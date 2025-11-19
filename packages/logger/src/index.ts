@@ -4,7 +4,7 @@ import Pretty from 'pino-pretty';
 
 @injectable()
 export class Logger implements ILogger {
-    private pino!: PinoLogger;
+    private pino!: ChildLogger;
 
     init(options: ILoggerOptions): void {
         this.pino = Pino(
@@ -21,7 +21,7 @@ export class Logger implements ILogger {
         );
     }
 
-    getLogger(service?: string): PinoLogger {
+    getLogger(service?: string): ChildLogger {
         if (!service) {
             return this.pino;
         }
@@ -31,10 +31,12 @@ export class Logger implements ILogger {
 
 export interface ILogger {
     init(options: ILoggerOptions): void;
-    getLogger(service?: string): PinoLogger;
+    getLogger(service?: string): ChildLogger;
 }
 
 type ILoggerOptions = {
     development: boolean;
     level?: Level;
 };
+
+export type ChildLogger = PinoLogger;

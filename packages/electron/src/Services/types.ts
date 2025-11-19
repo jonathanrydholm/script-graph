@@ -1,17 +1,13 @@
 import {
     CentralConfig,
     IdentifiedProjectConfig,
-    LoadedPlugin,
-    NodeBlueprint,
     ProjectFlow,
     ProjectReference,
     ResolvedIO,
     SerializedSGNode,
     SGEdge,
-    SGNode,
 } from '@script_graph/core';
 import { BrowserWindow } from 'electron';
-import { Logger as PinoLogger } from 'pino';
 
 export interface IStorage {
     init(): void;

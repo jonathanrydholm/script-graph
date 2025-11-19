@@ -10,6 +10,7 @@ import Projects from './Projects';
 import ProjectFlows from './ProjectFlows';
 import { useEffect, useState } from 'react';
 import { type SerializedPlugin } from '@script_graph/general-types';
+import { NodeProvider } from './FlowEditor/NodeProvider';
 
 declare global {
     interface Window {
@@ -69,7 +70,14 @@ function App() {
     return (
         <Routes>
             <Route path="/" element={<Layout />}>
-                <Route path={`flow/:id`} element={<FlowEditor />} />
+                <Route
+                    path={`flow/:id`}
+                    element={
+                        <NodeProvider>
+                            <FlowEditor />
+                        </NodeProvider>
+                    }
+                />
                 <Route
                     path="*"
                     element={

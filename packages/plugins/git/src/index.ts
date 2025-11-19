@@ -49,7 +49,11 @@ const plugin: Plugin = {
             name: 'Sleep',
             type: 'sleep',
             tags: [],
-            inputs: [],
+            inputs: [
+                {
+                    type: 'void',
+                },
+            ],
             outputs: [
                 {
                     type: 'void',
@@ -60,6 +64,52 @@ const plugin: Plugin = {
             },
             execute: async () => {
                 await new Promise((r) => setTimeout(r, 1000));
+                return [
+                    {
+                        type: 'void',
+                    },
+                ];
+            },
+        },
+        {
+            name: 'TypedNode',
+            type: 'string',
+            tags: [],
+            inputs: [
+                {
+                    type: 'string',
+                    required: true,
+                },
+                {
+                    type: 'void',
+                },
+                {
+                    type: 'number',
+                },
+                {
+                    type: 'boolean',
+                },
+            ],
+            outputs: [
+                {
+                    type: 'void',
+                },
+            ],
+            config: {
+                fields: [
+                    {
+                        field: 'namn',
+                        type: 'string',
+                    },
+                ],
+            },
+            execute: async (_, config) => {
+                console.log(
+                    config.fields.find(
+                        (field) =>
+                            field.type === 'string' && field.field === 'name',
+                    ),
+                );
                 return [
                     {
                         type: 'void',

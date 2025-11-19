@@ -1,66 +1,115 @@
 import type { NodeBlueprint } from '@script_graph/core';
 import { Badge, IconButton, Stack, Tooltip } from '@mui/material';
-import { Handle, Position, type Node, type NodeProps } from '@xyflow/react';
-import { useMemo } from 'react';
+import {
+    Handle,
+    Position,
+    useNodeConnections,
+    type HandleType,
+    type Node,
+    type NodeProps,
+} from '@xyflow/react';
+import { useCallback, useMemo } from 'react';
 import { Logs } from 'lucide-react';
 import { useNodeLogs } from '../../Providers/NodeLogs';
+import { useNodeContext } from '../NodeProvider';
+import type { IO } from '@script_graph/plugin-types';
 
 export type IConstantNode = Node<NodeBlueprint>;
 
 export const GeneralNode = ({ id, data }: NodeProps<IConstantNode>) => {
     const { logs, status, setNodeLog } = useNodeLogs(id);
+    const { connectionEstablish } = useNodeContext();
+
+    const connections = useNodeConnections({});
+
+    const ioState = useCallback(
+        (io: IO, handleType: HandleType, index: number) => {
+            if (handleType === 'target') {
+                if (
+                    connections.some(
+                        (c) => c.target === id && c.targetHandle === `${index}`,
+                    )
+                ) {
+                    return '#FFE599';
+                }
+            } else {
+                if (
+                    connections.some(
+                        (c) => c.source === id && c.sourceHandle === `${index}`,
+                    )
+                ) {
+                    return '#FFE599';
+                }
+            }
+            if (connectionEstablish) {
+                if (connectionEstablish.nodeId !== id) {
+                    if (
+                        io.type === connectionEstablish.io.type &&
+                        handleType !== connectionEstablish.handleType
+                    ) {
+                        return '#359A84';
+                    }
+                }
+            }
+            if (io.required && handleType === 'target') {
+                return '#EE6983';
+            }
+            return '#eee';
+        },
+        [connectionEstablish, id, connections],
+    );
 
     const inputs = useMemo(() => {
         return data.inputs.map((input, index) => {
             return (
-                <Stack direction="row">
-                    <Tooltip title={input.type}>
-                        <Handle
-                            key={index}
-                            type="target"
-                            position={Position.Left}
-                            id={`${index}`}
-                            style={{
-                                width: 12,
-                                height: 12,
-                                minWidth: 12,
-                                minHeight: 12,
-                                maxWidth: 12,
-                                maxHeight: 12,
-                                backgroundColor: '#FFE599',
-                            }}
-                        />
-                    </Tooltip>
-                </Stack>
+                <Tooltip title={input.type} key={index}>
+                    <Handle
+                        key={index}
+                        type="target"
+                        position={Position.Left}
+                        id={`${index}`}
+                        style={{
+                            width: 12,
+                            height: 12,
+                            minWidth: 12,
+                            minHeight: 12,
+                            maxWidth: 12,
+                            maxHeight: 12,
+                            backgroundColor: ioState(input, 'target', index),
+                            position: 'initial',
+                            transform: 'none',
+                        }}
+                    />
+                </Tooltip>
             );
         });
-    }, [data.inputs]);
+    }, [data.inputs, ioState]);
 
     const outputs = useMemo(() => {
         return data.outputs.map((output, index) => {
             return (
-                <Stack direction="row">
-                    <Tooltip title={output.type}>
-                        <Handle
-                            key={index}
-                            type="source"
-                            position={Position.Right}
-                            id={`${index}`}
-                            style={{
-                                width: 12,
-                                height: 12,
-                                minWidth: 12,
-                                minHeight: 12,
-                                maxWidth: 12,
-                                maxHeight: 12,
-                                backgroundColor: '#FFE599',
-                            }}
-                        />
-                    </Tooltip>
-                </Stack>
+                <Tooltip title={output.type} key={index}>
+                    <Handle
+                        key={index}
+                        type="source"
+                        position={Position.Right}
+                        id={`${index}`}
+                        style={{
+                            width: 12,
+                            height: 12,
+                            minWidth: 12,
+                            minHeight: 12,
+                            maxWidth: 12,
+                            maxHeight: 12,
+                            backgroundColor: ioState(output, 'source', index),
+                            position: 'initial',
+                            transform: 'none',
+                        }}
+                    />
+                </Tooltip>
             );
         });
-    }, [data.outputs]);
+    }, [data.outputs, ioState]);
 
     const { border } = useMemo(() => {
         if (!status) {
@@ -81,13 +130,18 @@ export const GeneralNode = ({ id, data }: NodeProps<IConstantNode>) => {
             alignItems="center"
             color="#fff"
             bgcolor="#202228"
-            px={1}
-            py={2}
             border={border}
             borderRadius="4px"
             position="relative"
         >
-            <Stack gap={1}>{inputs}</Stack>
+            <Stack
+                gap={1}
+                py={1}
+                justifyContent="space-between"
+                sx={{ transform: 'translateX(-6px)' }}
+            >
+                {inputs}
+            </Stack>
             {data.name}
             {logs.length > 0 && (
                 <IconButton
@@ -105,7 +159,14 @@ export const GeneralNode = ({ id, data }: NodeProps<IConstantNode>) => {
                     </Badge>
                 </IconButton>
             )}
-            <Stack gap={1}>{outputs}</Stack>
+            <Stack
+                gap={1}
+                py={1}
+                justifyContent="space-between"
+                sx={{ transform: 'translateX(6px)' }}
+            >
+                {outputs}
+            </Stack>
         </Stack>
     );
 };

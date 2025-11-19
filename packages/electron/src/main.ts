@@ -46,6 +46,7 @@ DI.configure((container) => {
         development:
             container.get<IConfiguration>('IConfiguration').environment() ===
             'dev',
+        level: 'trace',
     });
     container.get<IStorage>('IStorage').init();
 });

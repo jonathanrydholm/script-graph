@@ -20,6 +20,7 @@ import {
     applyEdgeChanges,
     addEdge,
     type NodeTypes,
+    type OnConnectStartParams,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { GeneralNode } from './Nodes/General';
@@ -36,6 +37,7 @@ import { useSnackbar } from 'notistack';
 import NodeConfiguration from './NodeConfiguration';
 import { StoreContext } from '../Providers/Store';
 import FlowDetails from './Details';
+import { useNodeContext } from './NodeProvider';
 
 type SearchParams = {
     id: string;
@@ -50,16 +52,18 @@ const FlowEditor = () => {
     const { enqueueSnackbar } = useSnackbar();
 
     const [flow, setFlow] = useState<ProjectFlow | null>(null);
-    const [nodes, setNodes] = useState<Node[]>([]);
+    const [nodes, setNodes] = useState<Node<NodeBlueprint>[]>([]);
     const [edges, setEdges] = useState<Edge[]>([]);
 
-    useEffect(() => {
+    const fetchFlow = useCallback(() => {
         if (id && store.selectedProject) {
             window.api.getFlow(store.selectedProject.path, id).then(setFlow);
         } else {
             setFlow(null);
         }
     }, [id, store.selectedProject]);
+
+    useEffect(fetchFlow, [fetchFlow]);
 
     useEffect(() => {
         if (flow) {
@@ -134,7 +138,7 @@ const FlowEditor = () => {
     );
 
     const onNodesChange = useCallback(
-        (changes: NodeChange<Node>[]) =>
+        (changes: NodeChange<Node<NodeBlueprint>>[]) =>
             setNodes((nds) => applyNodeChanges(changes, nds)),
         [],
     );
@@ -149,12 +153,12 @@ const FlowEditor = () => {
         (params: Connection) =>
             setEdges((eds) =>
                 addEdge(
-                    params,
-                    eds.map((edge) => ({
-                        ...edge,
+                    {
+                        ...params,
                         animated: true,
                         style: { stroke: '#FFE599' },
-                    })),
+                    },
+                    eds,
                 ),
             ),
         [],
@@ -165,6 +169,62 @@ const FlowEditor = () => {
             General: GeneralNode,
         }),
         [],
+    );
+
+    const { setConnectionEstablish } = useNodeContext();
+
+    const onConnectionStart = useCallback(
+        (params: OnConnectStartParams) => {
+            if (params.handleId === null || params.nodeId === null) {
+                return;
+            }
+            if (params.handleType === 'source') {
+                const node = nodes.find((n) => n.id === params.nodeId);
+                if (node) {
+                    const output = node.data.outputs[parseInt(params.handleId)];
+                    if (output) {
+                        setConnectionEstablish({
+                            handleType: params.handleType,
+                            io: output,
+                            nodeId: params.nodeId,
+                        });
+                    }
+                }
+            }
+        },
+        [nodes, setConnectionEstablish],
+    );
+
+    const onConnectionEnd = useCallback(() => {
+        setConnectionEstablish(null);
+    }, [setConnectionEstablish]);
+
+    const isValidConnection = useCallback(
+        (link: Edge | Connection) => {
+            const source = nodes.find((n) => n.id === link.source);
+            const target = nodes.find((n) => n.id === link.target);
+            if (
+                !source ||
+                !target ||
+                !link.sourceHandle ||
+                !link.targetHandle
+            ) {
+                return false;
+            }
+            const output = source.data.outputs[parseInt(link.sourceHandle)];
+            const input = target.data.inputs[parseInt(link.targetHandle)];
+
+            if (!output || !input) {
+                return false;
+            }
+            if (output.type !== input.type) {
+                // TODO. More granular equality checks when schemas are added.
+                return false;
+            }
+
+            return true;
+        },
+        [nodes],
     );
 
     return (
@@ -213,6 +273,10 @@ const FlowEditor = () => {
                         setDroppedBlueprint(node as Node<NodeBlueprint>)
                     }
                     onConnect={onConnect}
+                    onConnectStart={(_, info) => onConnectionStart(info)}
+                    onConnectEnd={onConnectionEnd}
+                    isValidConnection={isValidConnection}
+                    deleteKeyCode={['Backspace', 'Delete']}
                     style={{ borderRadius: '4px' }}
                 >
                     <Background
@@ -233,7 +297,7 @@ const FlowEditor = () => {
                 }}
                 pb={2}
             >
-                <Blueprints />
+                <Blueprints onPluginsModified={() => fetchFlow()} />
                 {flow && (
                     <FlowDetails
                         flow={flow}
