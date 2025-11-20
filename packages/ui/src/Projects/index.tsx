@@ -1,75 +1,48 @@
-import type { ProjectReference } from '@script_graph/core';
 import {
     Box,
     Divider,
     List,
-    ListItem,
     ListItemButton,
     ListItemIcon,
     ListItemText,
 } from '@mui/material';
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { SquarePlus, FolderRoot } from 'lucide-react';
-import { StoreContext } from '../Providers/Store';
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { SquarePlus } from 'lucide-react';
 import NewProjectDialog from './NewProjectDialog';
+import ProjectListItem from './ProjectListItem';
+import { StoreContext } from '../Providers/Store';
+import NewFlowDialog from './NewFlowDialog';
+import type { ProjectConfig } from '@script_graph/general-types';
 
 const Projects = () => {
     const { setStore, store } = useContext(StoreContext);
 
-    const [projects, setProjects] = useState<ProjectReference[]>([]);
-
     const [createOpen, setCreateOpen] = useState<boolean>(false);
-
-    const onSelectProject = useCallback(
-        (reference: ProjectReference) => {
-            window.api.getProject(reference.path).then((project) => {
-                if (project) {
-                    setStore((prev) => ({ ...prev, selectedProject: project }));
-                }
-            });
-        },
-        [setStore],
+    const [createFlowOpen, setCreateFlowOpen] = useState<ProjectConfig | null>(
+        null,
     );
 
     useEffect(() => {
-        window.api.getProjectReferences().then(setProjects);
+        const unsubscribe = window.api.subscribeToProjects(
+            (stringifiedProjects) =>
+                setStore((prev) => ({
+                    ...prev,
+                    projects: JSON.parse(stringifiedProjects),
+                })),
+        );
+
+        return unsubscribe;
     }, []);
 
-    useEffect(() => {
-        if (projects.length > 0) {
-            onSelectProject(projects[0]);
-        }
-    }, [onSelectProject, projects]);
-
     const renderedList = useMemo(() => {
-        return projects.map((project) => (
-            <ListItem key={project.path} disablePadding>
-                <ListItemButton
-                    onClick={() => onSelectProject(project)}
-                    sx={{
-                        backgroundColor:
-                            store.selectedProject?.path === project.path
-                                ? '#313339'
-                                : undefined,
-                    }}
-                >
-                    <ListItemIcon>
-                        <FolderRoot
-                            color={
-                                store.selectedProject?.path === project.path
-                                    ? '#FFE599'
-                                    : '#AFAFB1'
-                            }
-                        />
-                    </ListItemIcon>
-                    <ListItemText
-                        primary={project.name}
-                        sx={{ color: '#AFAFB1' }}
-                    />
-                </ListItemButton>
-            </ListItem>
+        return store.projects.map((project) => (
+            <ProjectListItem
+                key={project.id}
+                project={project}
+                onCreateFlow={() => setCreateFlowOpen(project)}
+            />
         ));
-    }, [projects, store.selectedProject, onSelectProject]);
+    }, [store.projects, setCreateFlowOpen]);
 
     return (
         <Box height="100%">
@@ -90,12 +63,11 @@ const Projects = () => {
             <NewProjectDialog
                 open={createOpen}
                 onCancel={() => setCreateOpen(false)}
-                onSave={() => {
-                    window.api
-                        .getProjectReferences()
-                        .then(setProjects)
-                        .finally(() => setCreateOpen(false));
-                }}
+                onSave={() => setCreateOpen(false)}
+            />
+            <NewFlowDialog
+                project={createFlowOpen}
+                onClose={() => setCreateFlowOpen(null)}
             />
         </Box>
     );

@@ -1,28 +1,25 @@
 import { inject, injectable } from 'inversify';
 import { ipcMain, dialog } from 'electron';
-import {
-    IdentifiedProjectConfig,
-    ProjectFlow,
-    ProjectReference,
-    SGNode,
-} from '@script_graph/core';
-import { IElectronApp, IIpcHandler, IStorage } from './types';
+
+import { IElectronApp, IIpcHandler, IProjectService } from './types';
 import { FlowRuntime } from '@script_graph/flow-runtime';
 import { PluginInstaller } from '@script_graph/plugin-installer';
 import {
+    ProjectConfig,
     SerializedPlugin,
     TimestampedNodeLog,
 } from '@script_graph/general-types';
+import { SGNode } from '@script_graph/plugin-types';
 
 @injectable()
 export class IpcHandler implements IIpcHandler {
     private isReady = false;
 
     constructor(
-        @inject('IStorage') private storage: IStorage,
         @inject('FlowRuntime') private flowRuntime: FlowRuntime,
         @inject('PluginInstaller') private pluginInstaller: PluginInstaller,
         @inject('IElectronApp') private app: IElectronApp,
+        @inject('IProjectService') private projectService: IProjectService,
     ) {}
 
     setReady(): void {
@@ -45,17 +42,20 @@ export class IpcHandler implements IIpcHandler {
             }
         });
 
-        ipcMain.handle('updateProject', (_, config: IdentifiedProjectConfig) =>
-            this.storage.updateProject(config),
+        ipcMain.handle('updateProject', (_, config: ProjectConfig) =>
+            this.projectService.updateProject(config),
         );
-        ipcMain.handle('getProjectReferences', () =>
-            this.storage.getProjectReferences(),
+
+        ipcMain.handle('getProjects', () =>
+            Promise.resolve(this.projectService.getProjects()),
         );
-        ipcMain.handle('getProject', (_, path: string) =>
-            this.storage.getProject(path),
+
+        ipcMain.handle('createProject', (_, project: ProjectConfig) =>
+            this.projectService.createProject(project),
         );
-        ipcMain.handle('createProject', (_, project: ProjectReference) =>
-            this.storage.createProject(project),
+
+        ipcMain.handle('deleteProject', (_, project: ProjectConfig) =>
+            this.projectService.deleteProject(project),
         );
 
         ipcMain.handle('getRegisteredPlugins', async () => {
@@ -74,36 +74,22 @@ export class IpcHandler implements IIpcHandler {
                 })) as SerializedPlugin[];
         });
 
-        ipcMain.handle('getFlow', (_, projectPath: string, flowId: string) =>
-            this.storage.getFlow(projectPath, flowId),
-        );
-
         ipcMain.handle(
-            'updateFlow',
-            (_, projectPath: string, config: ProjectFlow) =>
-                this.storage.updateFlow(projectPath, config),
-        );
-
-        ipcMain.handle(
-            'runManualFlow',
-            async (_, projectPath: string, id: string) => {
-                const flow =
-                    (await this.storage.getFlow(projectPath, id)) || null;
-
+            'executeFlow',
+            async (_, projectId: string, flowId: string) => {
+                const flow = this.projectService.getFlow(projectId, flowId);
                 if (flow) {
                     await this.flowRuntime.ExecuteFlow(
                         flow.nodes,
                         flow.edges,
                         (log) => {
-                            this.app
-                                .getMainWindow()
-                                .webContents.send(
-                                    'node-log',
-                                    JSON.stringify({
-                                        ...log,
-                                        timestamp: new Date().getTime(),
-                                    } as TimestampedNodeLog),
-                                );
+                            this.app.getMainWindow().webContents.send(
+                                'node-log',
+                                JSON.stringify({
+                                    ...log,
+                                    timestamp: new Date().getTime(),
+                                } as TimestampedNodeLog),
+                            );
                         },
                         (nodeStatus) => {
                             this.app

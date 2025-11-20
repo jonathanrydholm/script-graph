@@ -93,6 +93,8 @@ const NewProjectDialog = ({ onCancel, open, onSave }: INewProjectDialog) => {
                             .createProject({
                                 name,
                                 path,
+                                flows: [],
+                                id: crypto.randomUUID(),
                             })
                             .then(() => {
                                 enqueueSnackbar('Project created!', {

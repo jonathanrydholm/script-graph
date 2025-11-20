@@ -41,6 +41,6 @@
         "@script_graph/plugin-installer": "^0.0.1",
         "@script_graph/logger": "^0.0.1",
         "electron-squirrel-startup": "^1.0.1",
-        "@script_graph/core": "*"
+        "chokidar": "4.0.3"
     }
 }

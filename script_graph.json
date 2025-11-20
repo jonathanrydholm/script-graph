@@ -1,55 +1,94 @@
 {
-  "flows": [
-    {
-      "id": "0d0a8f85-e6ff-4b14-abce-ca96253ee47b",
-      "edges": [
+    "flows": [
         {
-          "id": "xy-edge__ac63959f-9c02-4ebd-b01f-5c6adb32544c0-4536a7ce-4c0f-4992-aefd-be700db50f430",
-          "source": "ac63959f-9c02-4ebd-b01f-5c6adb32544c",
-          "sourceHandle": "0",
-          "target": "4536a7ce-4c0f-4992-aefd-be700db50f43",
-          "targetHandle": "0"
+            "id": "92f220ff-981b-4639-96ae-e47ecb612d43",
+            "edges": [
+                {
+                    "id": "xy-edge__e6e6aa08-636e-4c2b-8bad-4480dd9b23c20-f2bafc69-c92c-4a1f-a59c-22938336f5930",
+                    "source": "e6e6aa08-636e-4c2b-8bad-4480dd9b23c2",
+                    "sourceHandle": "0",
+                    "target": "f2bafc69-c92c-4a1f-a59c-22938336f593",
+                    "targetHandle": "0"
+                },
+                {
+                    "id": "xy-edge__f2bafc69-c92c-4a1f-a59c-22938336f5930-8f6d3c72-8d8a-43c9-80ef-0c42bd3570db0",
+                    "source": "f2bafc69-c92c-4a1f-a59c-22938336f593",
+                    "sourceHandle": "0",
+                    "target": "8f6d3c72-8d8a-43c9-80ef-0c42bd3570db",
+                    "targetHandle": "0"
+                }
+            ],
+            "name": "Abc",
+            "nodes": [
+                {
+                    "config": {
+                        "fields": []
+                    },
+                    "graphics": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "tags": [],
+                    "id": "e6e6aa08-636e-4c2b-8bad-4480dd9b23c2",
+                    "inputs": [],
+                    "name": "Entrypoint",
+                    "outputs": [
+                        {
+                            "type": "void"
+                        }
+                    ],
+                    "type": "entrypoint"
+                },
+                {
+                    "config": {
+                        "fields": []
+                    },
+                    "graphics": {
+                        "x": 158.03570107302687,
+                        "y": 93.43553302356713
+                    },
+                    "tags": [],
+                    "id": "f2bafc69-c92c-4a1f-a59c-22938336f593",
+                    "inputs": [
+                        {
+                            "type": "void"
+                        }
+                    ],
+                    "name": "Sleep",
+                    "outputs": [
+                        {
+                            "type": "void"
+                        }
+                    ],
+                    "type": "sleep"
+                },
+                {
+                    "config": {
+                        "fields": []
+                    },
+                    "graphics": {
+                        "x": 408.03570107302687,
+                        "y": 14.935533023567132
+                    },
+                    "tags": [],
+                    "id": "8f6d3c72-8d8a-43c9-80ef-0c42bd3570db",
+                    "inputs": [
+                        {
+                            "type": "void"
+                        }
+                    ],
+                    "name": "Sleep",
+                    "outputs": [
+                        {
+                            "type": "void"
+                        }
+                    ],
+                    "type": "sleep"
+                }
+            ],
+            "metaNodes": []
         }
-      ],
-      "name": "Git",
-      "nodes": [
-        {
-          "config": {
-            "fields": []
-          },
-          "graphics": {
-            "x": 0,
-            "y": 0
-          },
-          "id": "ac63959f-9c02-4ebd-b01f-5c6adb32544c",
-          "inputs": [],
-          "name": "Trigger",
-          "outputs": [
-            {
-              "type": "void"
-            }
-          ],
-          "type": "trigger"
-        },
-        {
-          "config": {
-            "fields": []
-          },
-          "graphics": {
-            "x": 287,
-            "y": 107
-          },
-          "id": "4536a7ce-4c0f-4992-aefd-be700db50f43",
-          "inputs": [
-            {
-              "type": "void"
-            }
-          ],
-          "name": "Git pull",
-          "outputs": [],
-          "type": "git-pull"
-        }
-      ]
-    }
-  ]
+    ],
+    "id": "f3dabc7e-266d-4418-8f96-014aeeeee1c0",
+    "name": "Project X"
 }

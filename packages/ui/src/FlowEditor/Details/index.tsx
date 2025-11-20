@@ -1,15 +1,14 @@
 import { IconButton, Stack, TextField, Tooltip } from '@mui/material';
-import type { ProjectFlow } from '@script_graph/core';
 import { useEffect, useState } from 'react';
-import { Save, Trash } from 'lucide-react';
+import { Save } from 'lucide-react';
+import type { ProjectFlow } from '@script_graph/general-types';
 
 interface IFlowDetails {
     flow: ProjectFlow;
     onSave: (name: string) => void;
-    onDelete: () => void;
 }
 
-const FlowDetails = ({ flow, onSave, onDelete }: IFlowDetails) => {
+const FlowDetails = ({ flow, onSave }: IFlowDetails) => {
     const [name, setName] = useState(flow.name);
 
     useEffect(() => {
@@ -36,11 +35,6 @@ const FlowDetails = ({ flow, onSave, onDelete }: IFlowDetails) => {
                 <Tooltip title="Save flow" onClick={() => onSave(name)}>
                     <IconButton>
                         <Save color="#FFE599" />
-                    </IconButton>
-                </Tooltip>
-                <Tooltip title="Delete flow">
-                    <IconButton onClick={onDelete}>
-                        <Trash color="#EE6983" />
                     </IconButton>
                 </Tooltip>
             </Stack>

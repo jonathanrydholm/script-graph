@@ -1,31 +1,10 @@
 import {
-    CentralConfig,
-    IdentifiedProjectConfig,
+    ProjectConfig,
     ProjectFlow,
-    ProjectReference,
-    ResolvedIO,
-    SerializedSGNode,
     SGEdge,
-} from '@script_graph/core';
+} from '@script_graph/general-types';
+import { ResolvedIO, SerializedSGNode } from '@script_graph/plugin-types';
 import { BrowserWindow } from 'electron';
-
-export interface IStorage {
-    init(): void;
-    loadStore(): Promise<void>;
-    saveStore(config: CentralConfig): Promise<void>;
-    /** Get the stored config */
-    getStore(): CentralConfig;
-
-    createProject(project: ProjectReference): Promise<ProjectReference>;
-    updateProject(
-        config: IdentifiedProjectConfig,
-    ): Promise<IdentifiedProjectConfig>;
-    updateFlow(projectPath: string, config: ProjectFlow): Promise<ProjectFlow>;
-
-    getProjectReferences(): Promise<ProjectReference[]>;
-    getProject(id: string): Promise<IdentifiedProjectConfig>;
-    getFlow(projectId: string, flowId: string): Promise<ProjectFlow>;
-}
 
 export interface IIpcHandler {
     init(): void;
@@ -58,4 +37,30 @@ export interface IConfiguration {
 
     /** Returns the path to the package.json in the plugin directory */
     pluginPackageJsonPath(): string;
+}
+
+export type ProjectReference = {
+    path: string;
+};
+
+export type CentralConfig = {
+    projects: ProjectReference[];
+};
+
+export interface ICentralConfigService {
+    init(): Promise<void>;
+    onCentralConfigChanged(
+        listener: (config: CentralConfig | null) => void,
+    ): void;
+    addProject(project: ProjectConfig): Promise<void>;
+    removeProject(project: ProjectConfig): Promise<void>;
+}
+
+export interface IProjectService {
+    init(): void;
+    getProjects(): ProjectConfig[];
+    updateProject(project: ProjectConfig): Promise<void>;
+    createProject(project: ProjectConfig): Promise<void>;
+    deleteProject(project: ProjectConfig): Promise<void>;
+    getFlow(projectId: string, flowId: string): ProjectFlow | null;
 }

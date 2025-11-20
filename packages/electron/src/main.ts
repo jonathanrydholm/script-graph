@@ -3,17 +3,19 @@ import { ElectronApp } from './Services/App';
 import { Configuration } from './Services/Configuration';
 import { DI } from './Services/DI';
 import { IpcHandler } from './Services/IpcHandler';
-import { Storage } from './Services/Storage';
 import {
+    ICentralConfigService,
     IConfiguration,
     IElectronApp,
     IIpcHandler,
-    IStorage,
+    IProjectService,
 } from './Services/types';
 import { FlowRuntime } from '@script_graph/flow-runtime';
 import { PluginInstaller } from '@script_graph/plugin-installer';
 import { join } from 'path';
 import { ILogger, Logger } from '@script_graph/logger';
+import { CentralConfigService } from './Services/CentralConfig';
+import { ProjectService } from './Services/Projects';
 
 DI.setup((container) => {
     container
@@ -34,7 +36,16 @@ DI.setup((container) => {
         .bind<IIpcHandler>('IIpcHandler')
         .to(IpcHandler)
         .inSingletonScope();
-    container.bind<IStorage>('IStorage').to(Storage).inSingletonScope();
+
+    container
+        .bind<ICentralConfigService>('ICentralConfigService')
+        .to(CentralConfigService)
+        .inSingletonScope();
+
+    container
+        .bind<IProjectService>('IProjectService')
+        .to(ProjectService)
+        .inSingletonScope();
     container
         .bind<IElectronApp>('IElectronApp')
         .to(ElectronApp)
@@ -48,7 +59,6 @@ DI.configure((container) => {
             'dev',
         level: 'trace',
     });
-    container.get<IStorage>('IStorage').init();
 });
 
 DI.run(async (container) => {
@@ -76,7 +86,12 @@ DI.run(async (container) => {
                     .get<FlowRuntime>('FlowRuntime')
                     .setSGNodes(plugins.flatMap((plugin) => plugin.nodes));
             });
-        await container.get<IStorage>('IStorage').loadStore();
+
+        container.get<IProjectService>('IProjectService').init();
+
+        await container
+            .get<ICentralConfigService>('ICentralConfigService')
+            .init();
         container.get<IIpcHandler>('IIpcHandler').setReady();
     } catch (error) {
         console.log(error);

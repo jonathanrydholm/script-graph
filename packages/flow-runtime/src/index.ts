@@ -50,10 +50,12 @@ export class FlowRuntime {
         roots.forEach(recursivelyJoin);
 
         const nonTriggers = roots.filter(
-            (root) => executableNodeMap[root.id].getNode().type !== 'trigger',
+            (root) =>
+                executableNodeMap[root.id].getNode().type !== 'entrypoint',
         );
         const triggers = roots.filter(
-            (root) => executableNodeMap[root.id].getNode().type === 'trigger',
+            (root) =>
+                executableNodeMap[root.id].getNode().type === 'entrypoint',
         );
 
         try {

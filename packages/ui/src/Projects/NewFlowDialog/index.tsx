@@ -8,25 +8,23 @@ import {
     Stack,
     TextField,
 } from '@mui/material';
-import { useContext, useState } from 'react';
-import { StoreContext } from '../../Providers/Store';
+import { useState } from 'react';
 import { useSnackbar } from 'notistack';
+import type { ProjectConfig } from '@script_graph/general-types';
 
 interface INewFlowDialog {
-    open: boolean;
+    project: ProjectConfig | null;
     onClose: () => void;
 }
 
-const NewFlowDialog = ({ onClose, open }: INewFlowDialog) => {
+const NewFlowDialog = ({ onClose, project }: INewFlowDialog) => {
     const { enqueueSnackbar } = useSnackbar();
-
-    const { store, setStore } = useContext(StoreContext);
 
     const [name, setName] = useState<string>('');
 
     return (
         <Dialog
-            open={open}
+            open={project !== null}
             onClose={onClose}
             maxWidth={'lg'}
             fullWidth
@@ -71,14 +69,14 @@ const NewFlowDialog = ({ onClose, open }: INewFlowDialog) => {
             <DialogActions>
                 <Button onClick={onClose}>CANCEL</Button>
                 <Button
-                    disabled={!name || !store.selectedProject}
+                    disabled={!name || !project}
                     onClick={() => {
-                        if (store.selectedProject) {
+                        if (project) {
                             window.api
                                 .updateProject({
-                                    ...store.selectedProject,
+                                    ...project,
                                     flows: [
-                                        ...store.selectedProject.flows,
+                                        ...project.flows,
                                         {
                                             id: crypto.randomUUID(),
                                             edges: [],
@@ -99,20 +97,15 @@ const NewFlowDialog = ({ onClose, open }: INewFlowDialog) => {
                                                             type: 'void',
                                                         },
                                                     ],
-                                                    name: 'Trigger',
-                                                    type: 'trigger',
+                                                    name: 'Entrypoint',
+                                                    type: 'entrypoint',
                                                     tags: [],
                                                 },
                                             ],
+                                            metaNodes: [],
                                         },
                                     ],
                                 })
-                                .then((updatedProject) =>
-                                    setStore((prev) => ({
-                                        ...prev,
-                                        selectedProject: updatedProject,
-                                    })),
-                                )
                                 .then(() => {
                                     enqueueSnackbar('Flow created!', {
                                         variant: 'success',

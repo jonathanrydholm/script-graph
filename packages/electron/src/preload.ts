@@ -1,31 +1,37 @@
-import {
-    ProjectConfig,
-    ProjectFlow,
-    ProjectReference,
-} from '@script_graph/core';
+import { ProjectConfig } from '@script_graph/general-types';
 import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('api', {
     waitUntilReady: () => ipcRenderer.invoke('waitUntilReady'),
 
-    getProject: (id: string) => ipcRenderer.invoke('getProject', id),
-    getProjectReferences: () => ipcRenderer.invoke('getProjectReferences'),
+    /** Subscribe to any project modifications */
+    subscribeToProjects: (callback: (status: string) => void) => {
+        const listener = (_: unknown, value: string) => callback(value);
+        ipcRenderer
+            .invoke('getProjects')
+            .then((projects) => callback(JSON.stringify(projects)));
+
+        ipcRenderer.on('projectsUpdated', listener);
+        return () => {
+            ipcRenderer.removeListener('projectsUpdated', listener);
+        };
+    },
+
     updateProject: (config: ProjectConfig) =>
         ipcRenderer.invoke('updateProject', config),
+
+    deleteProject: (config: ProjectConfig) =>
+        ipcRenderer.invoke('deleteProject', config),
+
+    createProject: (config: ProjectConfig) =>
+        ipcRenderer.invoke('createProject', config),
+
     selectFolder: () => ipcRenderer.invoke('select-folder'),
-    getFlow: (projectId: string, flowId: string) =>
-        ipcRenderer.invoke('getFlow', projectId, flowId),
 
     getRegisteredPlugins: () => ipcRenderer.invoke('getRegisteredPlugins'),
 
-    createProject: (config: ProjectReference) =>
-        ipcRenderer.invoke('createProject', config),
-
-    updateFlow: (projectPath: string, config: ProjectFlow) =>
-        ipcRenderer.invoke('updateFlow', projectPath, config),
-
-    runManualFlow: (projectPath: string, flowId: string) =>
-        ipcRenderer.invoke('runManualFlow', projectPath, flowId),
+    executeFlow: (projectId: string, flowId: string) =>
+        ipcRenderer.invoke('executeFlow', projectId, flowId),
 
     onNodeLog: (callback: (stringifiedLog: string) => void) => {
         const listener = (_: unknown, value: string) => callback(value);

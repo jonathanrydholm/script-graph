@@ -1,4 +1,3 @@
-import type { NodeBlueprint } from '@script_graph/core';
 import { Badge, IconButton, Stack, Tooltip } from '@mui/material';
 import {
     Handle,
@@ -9,14 +8,14 @@ import {
     type NodeProps,
 } from '@xyflow/react';
 import { useCallback, useMemo } from 'react';
-import { Logs } from 'lucide-react';
+import { CirclePower, Logs } from 'lucide-react';
 import { useNodeLogs } from '../../Providers/NodeLogs';
 import { useNodeContext } from '../NodeProvider';
-import type { IO } from '@script_graph/plugin-types';
+import type { IO, SerializedSGNode } from '@script_graph/plugin-types';
 
-export type IConstantNode = Node<NodeBlueprint>;
+export type IGeneralNode = Node<SerializedSGNode>;
 
-export const GeneralNode = ({ id, data }: NodeProps<IConstantNode>) => {
+export const GeneralNode = ({ id, data }: NodeProps<IGeneralNode>) => {
     const { logs, status, setNodeLog } = useNodeLogs(id);
     const { connectionEstablish } = useNodeContext();
 
@@ -121,6 +120,34 @@ export const GeneralNode = ({ id, data }: NodeProps<IConstantNode>) => {
             border: status.success ? '1px solid #8BAE66' : '1px solid #EE6983',
         };
     }, [status]);
+
+    if (data.type === 'entrypoint') {
+        return (
+            <Stack
+                width={'48px'}
+                height={'48px'}
+                borderRadius={'50%'}
+                border={border}
+                justifyContent="center"
+                alignItems="center"
+                bgcolor="#202228"
+                direction="row"
+                position="relative"
+            >
+                <CirclePower color="#359A84" />
+                <Stack
+                    gap={1}
+                    py={1}
+                    justifyContent="space-between"
+                    sx={{ transform: 'translateX(6px)' }}
+                    position="absolute"
+                    right={0}
+                >
+                    {outputs}
+                </Stack>
+            </Stack>
+        );
+    }
 
     return (
         <Stack

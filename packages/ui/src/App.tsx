@@ -1,41 +1,34 @@
 import { Box, Stack } from '@mui/material';
 import { Outlet, Route, Routes } from 'react-router-dom';
 import FlowEditor from './FlowEditor';
-import {
-    type IdentifiedProjectConfig,
-    type ProjectFlow,
-    type ProjectReference,
-} from '@script_graph/core';
 import Projects from './Projects';
-import ProjectFlows from './ProjectFlows';
 import { useEffect, useState } from 'react';
-import { type SerializedPlugin } from '@script_graph/general-types';
+import {
+    type ProjectConfig,
+    type SerializedPlugin,
+} from '@script_graph/general-types';
 import { NodeProvider } from './FlowEditor/NodeProvider';
 
 declare global {
     interface Window {
         api: {
+            /** Wait until electron to finalize.  */
             waitUntilReady: () => Promise<void>;
 
-            createProject: (
-                project: ProjectReference,
-            ) => Promise<ProjectReference>;
-            getProject: (path: string) => Promise<IdentifiedProjectConfig>;
-            getRegisteredPlugins: () => Promise<SerializedPlugin[]>;
-            getProjectReferences: () => Promise<ProjectReference[]>;
-            updateProject: (
-                config: IdentifiedProjectConfig,
-            ) => Promise<IdentifiedProjectConfig>;
-            getFlow: (
-                projectPath: string,
-                flowId: string,
-            ) => Promise<ProjectFlow | null>;
-            updateFlow: (
-                projectPath: string,
-                config: ProjectFlow,
-            ) => Promise<ProjectFlow>;
+            /** Subscribe to any project mutations.  */
+            subscribeToProjects: (
+                callback: (stringifiedProjects: string) => void,
+            ) => () => void;
 
-            runManualFlow: (projectPath: string, id: string) => Promise<void>;
+            createProject: (project: ProjectConfig) => Promise<void>;
+
+            deleteProject: (project: ProjectConfig) => Promise<void>;
+
+            updateProject: (config: ProjectConfig) => Promise<void>;
+
+            getRegisteredPlugins: () => Promise<SerializedPlugin[]>;
+
+            executeFlow: (projectId: string, flowId: string) => Promise<void>;
 
             selectFolder: () => Promise<string | null>;
 
@@ -61,8 +54,6 @@ function App() {
         window.api.waitUntilReady().then(() => setReady(true));
     }, []);
 
-    console.log('isReady', ready);
-
     if (!ready) {
         return <></>;
     }
@@ -70,14 +61,30 @@ function App() {
     return (
         <Routes>
             <Route path="/" element={<Layout />}>
-                <Route
-                    path={`flow/:id`}
-                    element={
-                        <NodeProvider>
-                            <FlowEditor />
-                        </NodeProvider>
-                    }
-                />
+                <Route path={`project/:projectId`}>
+                    <Route
+                        path={`flow/:flowId`}
+                        element={
+                            <NodeProvider>
+                                <FlowEditor />
+                            </NodeProvider>
+                        }
+                    />
+                    <Route
+                        path="*"
+                        element={
+                            <Stack
+                                justifyContent="center"
+                                alignItems="center"
+                                flex={1}
+                                width="100%"
+                                color="white"
+                            >
+                                Select flow
+                            </Stack>
+                        }
+                    />
+                </Route>
                 <Route
                     path="*"
                     element={
@@ -88,7 +95,7 @@ function App() {
                             width="100%"
                             color="white"
                         >
-                            Select flow
+                            Select project
                         </Stack>
                     }
                 />
@@ -119,17 +126,6 @@ const Layout = () => {
                         flex={1}
                     >
                         <Projects />
-                    </Stack>
-                    <Stack
-                        sx={{
-                            backgroundColor: '#202228',
-                            borderRadius: '4px',
-                            boxShadow: '2px 2px 8px 0 rgba(0, 0, 0, 0.5)',
-                            overflowY: 'auto',
-                        }}
-                        flex={1}
-                    >
-                        <ProjectFlows />
                     </Stack>
                 </Stack>
                 <Stack

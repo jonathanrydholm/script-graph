@@ -51,7 +51,7 @@ const PluginListItem = ({ plugin }: IPluginListItem) => {
                             onDragStart={(e) => {
                                 e.stopPropagation();
                                 e.dataTransfer.setData(
-                                    'application/json',
+                                    'script_graph/blueprint',
                                     JSON.stringify(node),
                                 );
                             }}

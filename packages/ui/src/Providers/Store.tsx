@@ -1,8 +1,8 @@
+import type { ProjectConfig } from '@script_graph/general-types';
 import { createContext, useState } from 'react';
-import type { IdentifiedProjectConfig } from '@script_graph/core';
 
 export interface IStoreState {
-    selectedProject: IdentifiedProjectConfig | null
+    projects: ProjectConfig[];
 }
 
 export interface IStoreContext {
@@ -19,7 +19,7 @@ interface IStoreProvider {
 
 export const StoreProvider = ({ children }: IStoreProvider) => {
     const [store, setStore] = useState<IStoreState>({
-        selectedProject: null
+        projects: [],
     });
 
     return (

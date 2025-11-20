@@ -7,6 +7,7 @@ import { inject, injectable } from 'inversify';
 import { LoadedPlugin } from 'types';
 import { watch } from 'chokidar';
 import { ChildLogger, ILogger } from '@script_graph/logger';
+import { corePlugin } from './CorePlugin';
 
 /** TODO, watch plugin directory  */
 
@@ -18,7 +19,7 @@ export class PluginInstaller {
         this.logger = logger.getLogger('PluginInstaller');
     }
 
-    private registeredPlugins: LoadedPlugin[] = [];
+    private registeredPlugins: LoadedPlugin[] = [corePlugin];
 
     private pluginsModifiedListeners: ((plugins: LoadedPlugin[]) => void)[] =
         [];

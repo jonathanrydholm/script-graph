@@ -5,7 +5,7 @@
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "scripts": {
-        "build": "plugin-cli build-plugin",
+        "build": "plugin-cli build-plugin && cp ./@script_graph_git-0.0.1.zip /home/jonathanrydholm/.config/electron/plugins/@script_graph_git-0.0.1.zip",
         "publish": "plugin-cli publish-plugin"
     },
     "devDependencies": {

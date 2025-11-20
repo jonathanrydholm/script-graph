@@ -25,27 +25,6 @@ const plugin: Plugin = {
             type: 'git-pull',
         },
         {
-            name: 'Trigger',
-            type: 'trigger',
-            tags: [],
-            inputs: [],
-            outputs: [
-                {
-                    type: 'void',
-                },
-            ],
-            config: {
-                fields: [],
-            },
-            execute: async () => {
-                return [
-                    {
-                        type: 'void',
-                    },
-                ];
-            },
-        },
-        {
             name: 'Sleep',
             type: 'sleep',
             tags: [],
@@ -103,7 +82,7 @@ const plugin: Plugin = {
                     },
                 ],
             },
-            execute: async (_, config) => {
+            execute: async (io, config) => {
                 console.log(
                     config.fields.find(
                         (field) =>
