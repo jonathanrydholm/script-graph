@@ -1,5 +1,5 @@
 import { NodeStatus, SGEdge } from '@script_graph/general-types';
-import { ResolvedIO, SerializedSGNode } from '@script_graph/plugin-types';
+import { ExecuteFnIO, SerializedSGNode } from '@script_graph/plugin-types';
 
 export interface CompiledFlowNode {
     id: string;
@@ -12,15 +12,12 @@ export interface CompiledFlow {
 }
 
 export interface IExecutableNode {
-    run(inputs: ResolvedIO[]): Promise<void>;
+    run(inputs: ExecuteFnIO): Promise<void>;
     getNode(): SerializedSGNode;
     addChild(child: IExecutableNode, connections: SGEdge[]): void;
     addParent(parent: IExecutableNode, connections: SGEdge[]): void;
-    collectParentResults(): ResolvedIO[];
-    onParentCalling(
-        parent: IExecutableNode,
-        value: ResolvedIO[],
-    ): Promise<void>;
+    collectParentResults(): ExecuteFnIO;
+    onParentCalling(parent: IExecutableNode, value: ExecuteFnIO): Promise<void>;
 }
 
 export type StreamNodeStatusFn = (status: NodeStatus) => void;

@@ -1,35 +1,28 @@
 {
     "flows": [
         {
-            "id": "92f220ff-981b-4639-96ae-e47ecb612d43",
+            "id": "4111e97a-18d4-4510-bef0-bcea1f58c0ad",
             "edges": [
                 {
-                    "id": "xy-edge__e6e6aa08-636e-4c2b-8bad-4480dd9b23c20-f2bafc69-c92c-4a1f-a59c-22938336f5930",
-                    "source": "e6e6aa08-636e-4c2b-8bad-4480dd9b23c2",
+                    "id": "xy-edge__f72307e6-cdc5-420f-ba37-7a8287e5c5de0-f15719d1-2f10-4769-8e7b-7071ed9c9c470",
+                    "source": "f72307e6-cdc5-420f-ba37-7a8287e5c5de",
                     "sourceHandle": "0",
-                    "target": "f2bafc69-c92c-4a1f-a59c-22938336f593",
-                    "targetHandle": "0"
-                },
-                {
-                    "id": "xy-edge__f2bafc69-c92c-4a1f-a59c-22938336f5930-8f6d3c72-8d8a-43c9-80ef-0c42bd3570db0",
-                    "source": "f2bafc69-c92c-4a1f-a59c-22938336f593",
-                    "sourceHandle": "0",
-                    "target": "8f6d3c72-8d8a-43c9-80ef-0c42bd3570db",
+                    "target": "f15719d1-2f10-4769-8e7b-7071ed9c9c47",
                     "targetHandle": "0"
                 }
             ],
-            "name": "Abc",
+            "name": "Test",
             "nodes": [
                 {
                     "config": {
                         "fields": []
                     },
                     "graphics": {
-                        "x": 0,
-                        "y": 0
+                        "x": 65.90606271163638,
+                        "y": 113.1324624836283
                     },
                     "tags": [],
-                    "id": "e6e6aa08-636e-4c2b-8bad-4480dd9b23c2",
+                    "id": "f72307e6-cdc5-420f-ba37-7a8287e5c5de",
                     "inputs": [],
                     "name": "Entrypoint",
                     "outputs": [
@@ -44,46 +37,28 @@
                         "fields": []
                     },
                     "graphics": {
-                        "x": 158.03570107302687,
-                        "y": 93.43553302356713
+                        "x": 259.4698493523563,
+                        "y": 216.73865310096798,
+                        "w": 250,
+                        "h": 150
                     },
                     "tags": [],
-                    "id": "f2bafc69-c92c-4a1f-a59c-22938336f593",
+                    "id": "f15719d1-2f10-4769-8e7b-7071ed9c9c47",
                     "inputs": [
                         {
                             "type": "void"
                         }
                     ],
-                    "name": "Sleep",
+                    "name": "FileList",
                     "outputs": [
                         {
-                            "type": "void"
+                            "type": "array",
+                            "elements": {
+                                "type": "string"
+                            }
                         }
                     ],
-                    "type": "sleep"
-                },
-                {
-                    "config": {
-                        "fields": []
-                    },
-                    "graphics": {
-                        "x": 408.03570107302687,
-                        "y": 14.935533023567132
-                    },
-                    "tags": [],
-                    "id": "8f6d3c72-8d8a-43c9-80ef-0c42bd3570db",
-                    "inputs": [
-                        {
-                            "type": "void"
-                        }
-                    ],
-                    "name": "Sleep",
-                    "outputs": [
-                        {
-                            "type": "void"
-                        }
-                    ],
-                    "type": "sleep"
+                    "type": "file_list"
                 }
             ],
             "metaNodes": []

@@ -3,7 +3,9 @@ import { NodeConfig } from './NodeConfig';
 import { ResolvedIO } from './ResolvedIO';
 
 export type ExecutorFn = (
-    inputs: ResolvedIO[],
+    inputs: ExecuteFnIO,
     config: NodeConfig,
     context: ExecutionContext,
-) => Promise<ResolvedIO[]>;
+) => Promise<ExecuteFnIO>;
+
+export type ExecuteFnIO = Pick<ResolvedIO, 'type' | 'value'>[];

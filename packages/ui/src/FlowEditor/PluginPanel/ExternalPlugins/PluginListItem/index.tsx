@@ -14,7 +14,7 @@ interface IPluginListItem {
     plugin: SerializedPlugin;
 }
 
-const PluginListItem = ({ plugin }: IPluginListItem) => {
+export const PluginListItem = ({ plugin }: IPluginListItem) => {
     const [open, setOpen] = useState(false);
 
     return (
@@ -67,5 +67,3 @@ const PluginListItem = ({ plugin }: IPluginListItem) => {
         </>
     );
 };
-
-export default PluginListItem;

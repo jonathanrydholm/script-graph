@@ -1,4 +1,4 @@
-import { Plugin } from '@script_graph/plugin-types';
+import { Plugin, ResolvedStringIO } from '@script_graph/plugin-types';
 
 const plugin: Plugin = {
     nodes: [
@@ -51,22 +51,53 @@ const plugin: Plugin = {
             },
         },
         {
-            name: 'TypedNode',
-            type: 'string',
+            name: 'FileList',
+            type: 'file_list',
+            tags: [],
+            inputs: [
+                {
+                    type: 'void',
+                },
+            ],
+            outputs: [
+                {
+                    type: 'array',
+                    elements: {
+                        type: 'string',
+                    },
+                },
+            ],
+            config: {
+                fields: [],
+            },
+            execute: async (io, config) => {
+                return [
+                    {
+                        type: 'array',
+                        elements: {
+                            type: 'string',
+                        },
+                        value: [
+                            {
+                                type: 'string',
+                                value: 'First file.pdf',
+                            },
+                            {
+                                type: 'string',
+                                value: 'Second file.txt',
+                            },
+                        ],
+                    },
+                ];
+            },
+        },
+        {
+            name: 'FileProcessor',
+            type: 'file_proc',
             tags: [],
             inputs: [
                 {
                     type: 'string',
-                    required: true,
-                },
-                {
-                    type: 'void',
-                },
-                {
-                    type: 'number',
-                },
-                {
-                    type: 'boolean',
                 },
             ],
             outputs: [
@@ -75,20 +106,14 @@ const plugin: Plugin = {
                 },
             ],
             config: {
-                fields: [
-                    {
-                        field: 'namn',
-                        type: 'string',
-                    },
-                ],
+                fields: [],
             },
-            execute: async (io, config) => {
-                console.log(
-                    config.fields.find(
-                        (field) =>
-                            field.type === 'string' && field.field === 'name',
-                    ),
-                );
+            execute: async (io, config, context) => {
+                context.streamLog({
+                    level: 'warn',
+                    msg: `Processing file: ${(io[0] as ResolvedStringIO).value}`,
+                    nodeId: context.serializedNode.id,
+                });
                 return [
                     {
                         type: 'void',

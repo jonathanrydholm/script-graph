@@ -12,13 +12,19 @@ import { useCallback, useState } from 'react';
 import { FlowListItem } from './FlowListItem';
 import { ProjectListItemMenu } from './ContextMenu';
 import { useSnackbar } from 'notistack';
+import { useParams } from 'react-router-dom';
 
 interface IProjectListItem {
     project: ProjectConfig;
     onCreateFlow: () => void;
 }
 
+type SearchParams = {
+    projectId: string;
+};
+
 const ProjectListItem = ({ project, onCreateFlow }: IProjectListItem) => {
+    const { projectId } = useParams<SearchParams>();
     const { enqueueSnackbar } = useSnackbar();
     const [open, setOpen] = useState(false);
     const [contextMenu, setContextMenu] = useState<{
@@ -47,6 +53,10 @@ const ProjectListItem = ({ project, onCreateFlow }: IProjectListItem) => {
             <ListItemButton
                 onClick={() => setOpen(!open)}
                 onContextMenu={handleContextMenu}
+                sx={{
+                    backgroundColor:
+                        projectId === project.id ? '#313339' : undefined,
+                }}
             >
                 <ListItemIcon>
                     <Badge badgeContent={project.flows.length} color="primary">

@@ -1,6 +1,8 @@
 import { SGEdge } from '@script_graph/general-types';
 import {
+    ExecuteFnIO,
     ExecutorFn,
+    ResolvedArrayIO,
     ResolvedIO,
     SerializedSGNode,
     StreamLogFn,
@@ -13,19 +15,19 @@ export class ExecutableNode implements IExecutableNode {
     protected parents: {
         node: IExecutableNode;
         connections: SGEdge[];
-        value: ResolvedIO[] | undefined;
+        value: ExecuteFnIO | undefined;
     }[] = [];
 
-    public results: ResolvedIO[] = [];
+    public results: ExecuteFnIO = [];
 
     constructor(
-        private executor: ExecutorFn,
-        private serializedNode: SerializedSGNode,
-        private streamLog: StreamLogFn,
-        private streamNodeStatus: StreamNodeStatusFn,
+        protected executor: ExecutorFn,
+        protected serializedNode: SerializedSGNode,
+        protected streamLog: StreamLogFn,
+        protected streamNodeStatus: StreamNodeStatusFn,
     ) {}
 
-    async run(inputs: ResolvedIO[]) {
+    async run(inputs: ExecuteFnIO) {
         try {
             const outputs = await this.executor(
                 inputs,
@@ -75,7 +77,7 @@ export class ExecutableNode implements IExecutableNode {
     };
 
     /** All children of this node gets called with all of my output values.  */
-    callChildren = async (outputValue: ResolvedIO[]) => {
+    callChildren = async (outputValue: ExecuteFnIO) => {
         this.results = outputValue;
         await Promise.all(
             this.children.map((child) =>
@@ -84,7 +86,7 @@ export class ExecutableNode implements IExecutableNode {
         );
     };
 
-    onParentCalling = async (parent: IExecutableNode, value: ResolvedIO[]) => {
+    onParentCalling = async (parent: IExecutableNode, value: ExecuteFnIO) => {
         const existing = this.parents.find(
             (p) => p.node.getNode().id === parent.getNode().id,
         );
@@ -101,8 +103,8 @@ export class ExecutableNode implements IExecutableNode {
     };
 
     /** Map parent connection to correct inputs */
-    collectParentResults = (): ResolvedIO[] => {
-        const parentOutputs: ResolvedIO[] = [];
+    collectParentResults = (): ExecuteFnIO => {
+        const parentOutputs: ExecuteFnIO = [];
 
         this.parents.forEach(({ connections, value }) => {
             connections.forEach(({ targetHandle, sourceHandle }) => {
@@ -113,4 +115,37 @@ export class ExecutableNode implements IExecutableNode {
 
         return parentOutputs;
     };
+}
+
+export class LoopExecutable extends ExecutableNode {
+    async run(inputs: ExecuteFnIO): Promise<void> {
+        try {
+            const [array] = (await this.executor(
+                inputs,
+                this.serializedNode.config,
+                {
+                    serializedNode: this.serializedNode,
+                    streamLog: this.streamLog,
+                },
+            )) as [ResolvedArrayIO];
+
+            if (!array.value) {
+                throw new Error('Could not run loop. Missing array');
+            }
+
+            for (const val of array.value) {
+                await this.callChildren([val]);
+            }
+            this.streamNodeStatus({
+                success: true,
+                nodeId: this.serializedNode.id,
+            });
+        } catch (e) {
+            this.streamNodeStatus({
+                success: false,
+                nodeId: this.serializedNode.id,
+            });
+            throw e;
+        }
+    }
 }

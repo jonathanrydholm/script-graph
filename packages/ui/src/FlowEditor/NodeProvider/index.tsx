@@ -13,6 +13,7 @@ interface IConnectionEstablish {
     nodeId: string;
     handleType: HandleType;
     io: IO;
+    parentId?: string;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components

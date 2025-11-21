@@ -3,5 +3,4 @@ export type SGNodeGraphics = {
     y: number;
     w: number;
     h: number;
-    parentId?: string;
 };

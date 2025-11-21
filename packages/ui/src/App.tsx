@@ -3,10 +3,7 @@ import { Outlet, Route, Routes } from 'react-router-dom';
 import FlowEditor from './FlowEditor';
 import Projects from './Projects';
 import { useEffect, useState } from 'react';
-import {
-    type ProjectConfig,
-    type SerializedPlugin,
-} from '@script_graph/general-types';
+import { type ProjectConfig } from '@script_graph/general-types';
 import { NodeProvider } from './FlowEditor/NodeProvider';
 
 declare global {
@@ -26,8 +23,6 @@ declare global {
 
             updateProject: (config: ProjectConfig) => Promise<void>;
 
-            getRegisteredPlugins: () => Promise<SerializedPlugin[]>;
-
             executeFlow: (projectId: string, flowId: string) => Promise<void>;
 
             selectFolder: () => Promise<string | null>;
@@ -40,7 +35,7 @@ declare global {
                 callback: (statusMessage: string) => void,
             ) => () => void;
 
-            onPluginsModified: (
+            subscribeToPlugins: (
                 callback: (plugins: string) => void,
             ) => () => void;
         };

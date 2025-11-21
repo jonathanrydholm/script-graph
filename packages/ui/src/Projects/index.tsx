@@ -27,7 +27,9 @@ const Projects = () => {
             (stringifiedProjects) =>
                 setStore((prev) => ({
                     ...prev,
-                    projects: JSON.parse(stringifiedProjects),
+                    projects: (
+                        JSON.parse(stringifiedProjects) as ProjectConfig[]
+                    ).sort((a, b) => a.name.localeCompare(b.name)),
                 })),
         );
 

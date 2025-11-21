@@ -21,23 +21,26 @@ import {
     addEdge,
     type NodeTypes,
     type OnConnectStartParams,
+    Panel,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { GeneralNode } from './Nodes/General';
 import { useParams } from 'react-router-dom';
 import { Stack } from '@mui/material';
-import Blueprints from './Blueprints';
 import { useSnackbar } from 'notistack';
 import NodeConfiguration from './NodeConfiguration';
 import { StoreContext } from '../Providers/Store';
 import FlowDetails from './Details';
 import { useNodeContext } from './NodeProvider';
 import type {
+    ArrayIO,
     IO,
     NodeConfig,
     SerializedSGNode,
 } from '@script_graph/plugin-types';
 import type { MetaNode, ProjectFlow } from '@script_graph/general-types';
+import { ForEachNode } from './Nodes/ForEach';
+import { PluginPanel } from './PluginPanel';
 
 type SearchParams = {
     projectId: string;
@@ -45,7 +48,7 @@ type SearchParams = {
 };
 
 const FlowEditor = () => {
-    const { store, setStore } = useContext(StoreContext);
+    const { store } = useContext(StoreContext);
     const { flowId, projectId } = useParams<SearchParams>();
 
     const { screenToFlowPosition, addNodes, addEdges } = useReactFlow();
@@ -106,9 +109,7 @@ const FlowEditor = () => {
             setNodes([
                 ...flow.metaNodes.map((meta) => {
                     const { height, width } = calculateBounds(
-                        flow.nodes.filter(
-                            (n) => n.graphics.parentId === meta.id,
-                        ),
+                        flow.nodes.filter((n) => n.parentId === meta.id),
                     );
                     return {
                         id: meta.id,
@@ -131,8 +132,11 @@ const FlowEditor = () => {
                         x: node.graphics.x,
                         y: node.graphics.y,
                     },
-                    type: 'General',
-                    parentId: node.graphics.parentId,
+                    type: node.type === 'ForEach' ? 'ForEach' : 'General',
+                    parentId: node.parentId,
+                    width: node.graphics.w,
+                    height: node.graphics.h,
+                    extent: node.parentId ? 'parent' : undefined,
                     data: {
                         config: node.config,
                         inputs: node.inputs,
@@ -259,16 +263,55 @@ const FlowEditor = () => {
                             id: crypto.randomUUID(),
                             data: blueprint,
                             position,
-                            type: 'General',
+                            type:
+                                blueprint.type === 'ForEach'
+                                    ? 'ForEach'
+                                    : 'General',
+                            width: 200,
+                            height: 80,
                         });
                     } else {
                         addNodes({
                             id: crypto.randomUUID(),
                             data: blueprint,
                             position,
-                            type: 'General',
+                            type:
+                                blueprint.type === 'ForEach'
+                                    ? 'ForEach'
+                                    : 'General',
+                            width: 200,
+                            height: 80,
                         });
                     }
+                } else if (transferType === 'script_graph/special') {
+                    const newId = crypto.randomUUID();
+                    addNodes({
+                        id: newId,
+                        data: {
+                            config: {
+                                fields: [],
+                            },
+                            graphics: { h: 0, w: 0, x: 0, y: 0 },
+                            id: newId,
+                            inputs: [
+                                {
+                                    type: 'void',
+                                },
+                            ],
+                            name: 'ForEach',
+                            type: 'ForEach',
+                            outputs: [
+                                {
+                                    type: 'void',
+                                },
+                            ],
+                            tags: [],
+                        } as SerializedSGNode,
+                        position,
+                        type: event.dataTransfer.getData(transferType),
+                        width: 400,
+                        height: 400,
+                    });
                 }
             }
         },
@@ -294,7 +337,7 @@ const FlowEditor = () => {
                     {
                         ...params,
                         animated: true,
-                        style: { stroke: '#FFE599' },
+                        style: { stroke: '#FFE599', zIndex: 1000 },
                     },
                     eds,
                 ),
@@ -305,6 +348,7 @@ const FlowEditor = () => {
     const nodeTypes: NodeTypes = useMemo(
         () => ({
             General: GeneralNode,
+            ForEach: ForEachNode,
         }),
         [],
     );
@@ -316,54 +360,65 @@ const FlowEditor = () => {
             if (params.handleId === null || params.nodeId === null) {
                 return;
             }
+
             if (params.handleType === 'source') {
-                const node = nodes.find((n) => n.id === params.nodeId);
-                if (node) {
-                    const output = node.data.outputs[parseInt(params.handleId)];
+                const source = nodes.find((n) => n.id === params.nodeId);
+                if (source) {
+                    if (source.data.type === 'ForEach') {
+                        const forEachInput = source.data.inputs[0] as ArrayIO;
+
+                        if (!forEachInput) {
+                            // TODO, show LOADS of warnings. Maybe isValidConnection could be omitted?
+                            return;
+                        }
+
+                        const connectedEdge = edges.find(
+                            (e) => e.target === source.id,
+                        );
+                        if (connectedEdge) {
+                            const ancestor = nodes.find(
+                                (n) => n.id === connectedEdge.source,
+                            );
+                            if (ancestor) {
+                                const ancestorOutput =
+                                    ancestor.data.outputs[
+                                        parseInt(connectedEdge.sourceHandle!)
+                                    ];
+                                if (
+                                    ancestorOutput &&
+                                    ancestorOutput.type === 'array'
+                                ) {
+                                    setConnectionEstablish({
+                                        handleType: params.handleType,
+                                        io: ancestorOutput.elements,
+                                        nodeId: params.nodeId,
+                                        parentId: source.parentId,
+                                    });
+                                    return;
+                                }
+                            }
+                        }
+                    }
+
+                    const output =
+                        source.data.outputs[parseInt(params.handleId)];
                     if (output) {
                         setConnectionEstablish({
                             handleType: params.handleType,
                             io: output,
                             nodeId: params.nodeId,
+                            parentId: source.parentId,
                         });
                     }
                 }
             }
         },
-        [nodes, setConnectionEstablish],
+        [nodes, setConnectionEstablish, edges],
     );
 
     const onConnectionEnd = useCallback(() => {
         setConnectionEstablish(null);
     }, [setConnectionEstablish]);
-
-    const isValidConnection = useCallback(
-        (link: Edge | Connection) => {
-            const source = nodes.find((n) => n.id === link.source);
-            const target = nodes.find((n) => n.id === link.target);
-            if (
-                !source ||
-                !target ||
-                !link.sourceHandle ||
-                !link.targetHandle
-            ) {
-                return false;
-            }
-            const output = source.data.outputs[parseInt(link.sourceHandle)];
-            const input = target.data.inputs[parseInt(link.targetHandle)];
-
-            if (!output || !input) {
-                return false;
-            }
-            if (output.type !== input.type) {
-                // TODO. More granular equality checks when schemas are added.
-                return false;
-            }
-
-            return true;
-        },
-        [nodes],
-    );
 
     return (
         <Stack
@@ -414,127 +469,144 @@ const FlowEditor = () => {
                     onConnect={onConnect}
                     onConnectStart={(_, info) => onConnectionStart(info)}
                     onConnectEnd={onConnectionEnd}
-                    isValidConnection={isValidConnection}
                     deleteKeyCode={['Backspace', 'Delete']}
                     style={{ borderRadius: '4px' }}
                 >
                     <Background
                         variant={BackgroundVariant.Dots}
-                        bgColor="#191B1F"
+                        bgColor="rgba(25, 27, 31, 1)"
                         gap={40}
                         size={4}
                         color="rgba(255, 255, 255, 0.05)"
                     />
+                    <Panel position="top-right">
+                        {flow && (
+                            <FlowDetails
+                                flow={flow}
+                                onSave={(name) => {
+                                    if (project && flow) {
+                                        window.api
+                                            .updateProject({
+                                                ...project,
+                                                flows: project.flows.map(
+                                                    (f) => {
+                                                        if (f.id !== flowId) {
+                                                            return flow;
+                                                        }
+                                                        return {
+                                                            id: f.id,
+                                                            edges: edges.map(
+                                                                (edge) => ({
+                                                                    id: edge.id,
+                                                                    source: edge.source,
+                                                                    sourceHandle:
+                                                                        edge.sourceHandle as string,
+                                                                    target: edge.target,
+                                                                    targetHandle:
+                                                                        edge.targetHandle as string,
+                                                                }),
+                                                            ),
+                                                            name,
+                                                            nodes: nodes
+                                                                .filter(
+                                                                    (node) =>
+                                                                        node
+                                                                            .data
+                                                                            .type !==
+                                                                        'group',
+                                                                )
+                                                                .map(
+                                                                    (node) => ({
+                                                                        config: node
+                                                                            .data
+                                                                            .config as NodeConfig,
+                                                                        graphics:
+                                                                            {
+                                                                                x: node
+                                                                                    .position
+                                                                                    .x,
+                                                                                y: node
+                                                                                    .position
+                                                                                    .y,
+                                                                                w: node.width!,
+                                                                                h: node.height!,
+                                                                            },
+                                                                        tags: [],
+                                                                        id: node.id,
+                                                                        inputs: node
+                                                                            .data
+                                                                            .inputs as IO[],
+                                                                        name: node
+                                                                            .data
+                                                                            .name as string,
+                                                                        outputs:
+                                                                            node
+                                                                                .data
+                                                                                .outputs as IO[],
+                                                                        type: node
+                                                                            .data
+                                                                            .type as string,
+                                                                        parentId:
+                                                                            node.parentId,
+                                                                    }),
+                                                                ),
+                                                            metaNodes: nodes
+                                                                .filter(
+                                                                    (node) =>
+                                                                        node
+                                                                            .data
+                                                                            .type ===
+                                                                        'group',
+                                                                )
+                                                                .map(
+                                                                    (node) =>
+                                                                        ({
+                                                                            graphics:
+                                                                                {
+                                                                                    x: node
+                                                                                        .position
+                                                                                        .x,
+                                                                                    y: node
+                                                                                        .position
+                                                                                        .y,
+                                                                                    w: node.width!,
+                                                                                    h: node.height!,
+                                                                                },
+                                                                            tags: [],
+                                                                            id: node.id,
+                                                                            name: node
+                                                                                .data
+                                                                                .name as string,
+                                                                            type: node
+                                                                                .data
+                                                                                .type as string,
+                                                                        }) as MetaNode,
+                                                                ),
+                                                        };
+                                                    },
+                                                ),
+                                            })
+                                            .then(() =>
+                                                enqueueSnackbar('Saved flow!', {
+                                                    variant: 'success',
+                                                }),
+                                            )
+                                            .catch(() =>
+                                                enqueueSnackbar(
+                                                    'Could not save flow.',
+                                                    {
+                                                        variant: 'error',
+                                                    },
+                                                ),
+                                            );
+                                    }
+                                }}
+                            />
+                        )}
+                    </Panel>
                 </ReactFlow>
             </Stack>
-            <Stack
-                width="250px"
-                sx={{
-                    backgroundColor: '#202228',
-                    borderRadius: '4px',
-                    boxShadow: '0 -2px 8px 0 rgba(0, 0, 0, 0.5)',
-                }}
-                pb={2}
-            >
-                <Blueprints onPluginsModified={() => {}} />
-                {flow && (
-                    <FlowDetails
-                        flow={flow}
-                        onSave={(name) => {
-                            if (project && flow) {
-                                window.api
-                                    .updateProject({
-                                        ...project,
-                                        flows: project.flows.map((f) => {
-                                            if (f.id !== flowId) {
-                                                return flow;
-                                            }
-                                            return {
-                                                id: f.id,
-                                                edges: edges.map((edge) => ({
-                                                    id: edge.id,
-                                                    source: edge.source,
-                                                    sourceHandle:
-                                                        edge.sourceHandle as string,
-                                                    target: edge.target,
-                                                    targetHandle:
-                                                        edge.targetHandle as string,
-                                                })),
-                                                name,
-                                                nodes: nodes
-                                                    .filter(
-                                                        (node) =>
-                                                            node.data.type !==
-                                                            'group',
-                                                    )
-                                                    .map((node) => ({
-                                                        config: node.data
-                                                            .config as NodeConfig,
-                                                        graphics: {
-                                                            x: node.position.x,
-                                                            y: node.position.y,
-                                                            w: node.width!,
-                                                            h: node.height!,
-                                                        },
-                                                        tags: [],
-                                                        id: node.id,
-                                                        inputs: node.data
-                                                            .inputs as IO[],
-                                                        name: node.data
-                                                            .name as string,
-                                                        outputs: node.data
-                                                            .outputs as IO[],
-                                                        type: node.data
-                                                            .type as string,
-                                                    })),
-                                                metaNodes: nodes
-                                                    .filter(
-                                                        (node) =>
-                                                            node.data.type ===
-                                                            'group',
-                                                    )
-                                                    .map(
-                                                        (node) =>
-                                                            ({
-                                                                graphics: {
-                                                                    x: node
-                                                                        .position
-                                                                        .x,
-                                                                    y: node
-                                                                        .position
-                                                                        .y,
-                                                                    w: node.width!,
-                                                                    h: node.height!,
-                                                                },
-                                                                tags: [],
-                                                                id: node.id,
-                                                                name: node.data
-                                                                    .name as string,
-                                                                type: node.data
-                                                                    .type as string,
-                                                            }) as MetaNode,
-                                                    ),
-                                            };
-                                        }),
-                                    })
-                                    .then(() =>
-                                        enqueueSnackbar('Saved flow!', {
-                                            variant: 'success',
-                                        }),
-                                    )
-                                    .catch(() =>
-                                        enqueueSnackbar(
-                                            'Could not save flow.',
-                                            {
-                                                variant: 'error',
-                                            },
-                                        ),
-                                    );
-                            }
-                        }}
-                    />
-                )}
-            </Stack>
+            <PluginPanel />
         </Stack>
     );
 };

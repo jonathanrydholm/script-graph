@@ -28,8 +28,6 @@ contextBridge.exposeInMainWorld('api', {
 
     selectFolder: () => ipcRenderer.invoke('select-folder'),
 
-    getRegisteredPlugins: () => ipcRenderer.invoke('getRegisteredPlugins'),
-
     executeFlow: (projectId: string, flowId: string) =>
         ipcRenderer.invoke('executeFlow', projectId, flowId),
 
@@ -51,8 +49,11 @@ contextBridge.exposeInMainWorld('api', {
         };
     },
 
-    onPluginsModified: (callback: (plugins: string) => void) => {
+    subscribeToPlugins: (callback: (plugins: string) => void) => {
         const listener = (_: unknown, plugins: string) => callback(plugins);
+        ipcRenderer
+            .invoke('getRegisteredPlugins')
+            .then((plugins) => callback(JSON.stringify(plugins)));
 
         ipcRenderer.on('onPluginsModified', listener);
         return () => {

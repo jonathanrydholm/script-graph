@@ -1,4 +1,5 @@
 import { LoadedPlugin } from '../types';
+import { ResolvedArrayIO } from '@script_graph/plugin-types';
 
 export const corePlugin: LoadedPlugin = {
     name: 'core',
@@ -22,6 +23,35 @@ export const corePlugin: LoadedPlugin = {
                 return [
                     {
                         type: 'void',
+                    },
+                ];
+            },
+        },
+        {
+            config: {
+                fields: [],
+            },
+            inputs: [
+                {
+                    type: 'array',
+                    elements: {
+                        type: 'inherit',
+                    },
+                },
+            ],
+            outputs: [
+                {
+                    type: 'inherit',
+                },
+            ],
+            name: 'ForEach',
+            type: 'ForEach',
+            tags: [],
+            execute: async (io) => {
+                return [
+                    {
+                        type: 'array',
+                        value: (io[0] as ResolvedArrayIO).value,
                     },
                 ];
             },

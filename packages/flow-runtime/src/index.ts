@@ -11,7 +11,7 @@ import {
     IExecutableNode,
     StreamNodeStatusFn,
 } from './types';
-import { ExecutableNode } from './ExecutableNode';
+import { ExecutableNode, LoopExecutable } from './ExecutableNode';
 
 @injectable()
 export class FlowRuntime {
@@ -98,6 +98,14 @@ export class FlowRuntime {
     ): IExecutableNode {
         const sgNode = this.sgNodeMap[serializedNode.type];
         if (sgNode) {
+            if (sgNode.type === 'ForEach') {
+                return new LoopExecutable(
+                    sgNode.execute,
+                    serializedNode,
+                    streamLog,
+                    streamNodeStatus,
+                );
+            }
             return new ExecutableNode(
                 sgNode.execute,
                 serializedNode,
