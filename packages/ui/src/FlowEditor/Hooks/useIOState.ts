@@ -41,6 +41,14 @@ export const useIOState = (
         }
         if (connectionEstablish) {
             if (connectionEstablish.nodeId !== nodeId) {
+                if (connectionEstablish.io.type === 'inherit') {
+                    return 'available';
+                }
+                /** TODO, check below should be re-visited */
+                if (io.type === 'inherit' && handleType === 'target') {
+                    return 'available';
+                }
+
                 if (
                     io.type === connectionEstablish.io.type &&
                     handleType !== connectionEstablish.handleType

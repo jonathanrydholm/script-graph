@@ -1,14 +1,15 @@
 import { Stack } from '@mui/material';
 import {
     NodeResizer,
-    useReactFlow,
+    useUpdateNodeInternals,
     type Node,
     type NodeProps,
 } from '@xyflow/react';
 import type { SerializedSGNode } from '@script_graph/plugin-types';
-import { useCallback, useMemo, useState, type DragEventHandler } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNodeLogs } from '../../../Providers/NodeLogs';
 import { IOHandle } from '../../IOHandle';
+import { useDropHandler } from '../../Hooks';
 
 export type IForEachNode = Node<SerializedSGNode>;
 
@@ -19,52 +20,7 @@ export const ForEachNode = ({
     data,
     parentId,
 }: NodeProps<IForEachNode>) => {
-    const { addNodes, screenToFlowPosition } = useReactFlow();
     const { status } = useNodeLogs(id);
-
-    const onDrop: DragEventHandler<HTMLDivElement> = useCallback(
-        (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            for (const transferType of event.dataTransfer.types) {
-                if (transferType === 'script_graph/blueprint') {
-                    const blueprintString =
-                        event.dataTransfer.getData(transferType);
-                    const blueprint = JSON.parse(
-                        blueprintString,
-                    ) as SerializedSGNode;
-
-                    const position = screenToFlowPosition({
-                        x: event.clientX - positionAbsoluteX - 200,
-                        y: event.clientY - positionAbsoluteY - 80,
-                    });
-
-                    addNodes({
-                        id: crypto.randomUUID(),
-                        data: blueprint,
-                        position,
-                        type:
-                            blueprint.type === 'ForEach'
-                                ? 'ForEach'
-                                : 'General',
-                        parentId: id,
-                        extent: 'parent',
-                        width: 200,
-                        height: 80,
-                    });
-                }
-            }
-
-            setDraggingOver(false);
-        },
-        [
-            addNodes,
-            screenToFlowPosition,
-            id,
-            positionAbsoluteX,
-            positionAbsoluteY,
-        ],
-    );
 
     const [draggingOver, setDraggingOver] = useState(false);
 
@@ -78,6 +34,21 @@ export const ForEachNode = ({
             border: status.success ? '1px solid #8BAE66' : '1px solid #EE6983',
         };
     }, [status]);
+
+    const afterDrop = useCallback(() => setDraggingOver(false), []);
+
+    const dropHandler = useDropHandler(
+        afterDrop,
+        positionAbsoluteX - 100,
+        positionAbsoluteY - 40,
+        id,
+    );
+
+    const updateNodeInternals = useUpdateNodeInternals();
+
+    useEffect(() => {
+        updateNodeInternals(id);
+    }, [id]);
 
     return (
         <>
@@ -99,7 +70,7 @@ export const ForEachNode = ({
                 width="100%"
                 height="100%"
                 direction="row"
-                onDrop={onDrop}
+                onDrop={dropHandler}
                 border={border}
                 borderRadius="4px"
                 sx={{

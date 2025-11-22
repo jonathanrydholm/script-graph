@@ -38,9 +38,11 @@ import type {
     NodeConfig,
     SerializedSGNode,
 } from '@script_graph/plugin-types';
-import type { MetaNode, ProjectFlow } from '@script_graph/general-types';
 import { ForEachNode } from './Nodes/ForEach';
 import { PluginPanel } from './PluginPanel';
+import { useDropHandler } from './Hooks';
+import { InputNode } from './Nodes/Input';
+import { TemplateNode } from './Nodes/Template';
 
 type SearchParams = {
     projectId: string;
@@ -51,9 +53,11 @@ const FlowEditor = () => {
     const { store } = useContext(StoreContext);
     const { flowId, projectId } = useParams<SearchParams>();
 
-    const { screenToFlowPosition, addNodes, addEdges } = useReactFlow();
+    const { addNodes } = useReactFlow();
 
     const { enqueueSnackbar } = useSnackbar();
+
+    const { setDroppedBlueprint, droppedBlueprint } = useNodeContext();
 
     const [nodes, setNodes] = useState<Node<SerializedSGNode>[]>([]);
     const [edges, setEdges] = useState<Edge[]>([]);
@@ -74,65 +78,18 @@ const FlowEditor = () => {
         return project.flows.find((f) => f.id === flowId) || null;
     }, [project, flowId]);
 
-    const calculateBounds = useCallback((nodes: SerializedSGNode[]) => {
-        const bounds = {
-            x1: Number.POSITIVE_INFINITY,
-            x2: Number.NEGATIVE_INFINITY,
-            y1: Number.POSITIVE_INFINITY,
-            y2: Number.NEGATIVE_INFINITY,
-        };
-
-        nodes.forEach((node) => {
-            if (node.graphics.x < bounds.x1) {
-                bounds.x1 = node.graphics.x;
-            }
-            if (node.graphics.x > bounds.x2) {
-                bounds.x2 = node.graphics.x;
-            }
-
-            if (node.graphics.y < bounds.y1) {
-                bounds.y1 = node.graphics.y;
-            }
-            if (node.graphics.y > bounds.y2) {
-                bounds.y2 = node.graphics.y;
-            }
-        });
-
-        return {
-            width: bounds.x2 - bounds.x1,
-            height: bounds.y2 - bounds.y1,
-        };
-    }, []);
-
     useEffect(() => {
         if (flow) {
-            setNodes([
-                ...flow.metaNodes.map((meta) => {
-                    const { height, width } = calculateBounds(
-                        flow.nodes.filter((n) => n.parentId === meta.id),
-                    );
-                    return {
-                        id: meta.id,
-                        position: {
-                            x: meta.graphics.x,
-                            y: meta.graphics.y,
-                        },
-                        width,
-                        height,
-                        type: meta.type,
-                        data: {
-                            name: meta.name,
-                            type: meta.type,
-                        } as SerializedSGNode,
-                    };
-                }),
-                ...flow.nodes.map((node) => ({
+            setNodes(
+                flow.nodes.map((node) => ({
                     id: node.id,
                     position: {
                         x: node.graphics.x,
                         y: node.graphics.y,
                     },
-                    type: node.type === 'ForEach' ? 'ForEach' : 'General',
+                    type: ['ForEach', 'Input', 'Template'].includes(node.type)
+                        ? node.type
+                        : 'General',
                     parentId: node.parentId,
                     width: node.graphics.w,
                     height: node.graphics.h,
@@ -148,7 +105,7 @@ const FlowEditor = () => {
                         tags: node.tags,
                     } as SerializedSGNode,
                 })),
-            ]);
+            );
             setEdges(
                 flow.edges.map((edge) => ({
                     ...edge,
@@ -159,9 +116,6 @@ const FlowEditor = () => {
         }
     }, [flow]);
 
-    const [droppedBlueprint, setDroppedBlueprint] =
-        useState<Node<SerializedSGNode> | null>(null);
-
     const onDragOver: DragEventHandler<HTMLDivElement> = useCallback(
         (event) => {
             event.preventDefault();
@@ -170,153 +124,9 @@ const FlowEditor = () => {
         [],
     );
 
-    const onDrop: DragEventHandler<HTMLDivElement> = useCallback(
-        (event) => {
-            event.preventDefault();
+    const afterDrop = useCallback(console.log, []);
 
-            const position = screenToFlowPosition({
-                x: event.clientX,
-                y: event.clientY,
-            });
-
-            for (const transferType of event.dataTransfer.types) {
-                if (transferType === 'script_graph/flow') {
-                    const flowString = event.dataTransfer.getData(transferType);
-                    const flow = JSON.parse(flowString) as ProjectFlow;
-
-                    const mappedNodes: Node<SerializedSGNode>[] = [];
-
-                    const nodeIdMap: Record<string, string> = {};
-
-                    const subflowId = crypto.randomUUID();
-
-                    const { height, width } = calculateBounds(flow.nodes);
-
-                    const subflowNode: Node<SerializedSGNode> = {
-                        type: 'group',
-                        id: subflowId,
-                        position,
-                        width,
-                        height,
-                        data: {
-                            config: { fields: [] },
-                            graphics: { x: 0, y: 0, w: 0, h: 0 },
-                            id: subflowId,
-                            inputs: [],
-                            name: 'Subflow',
-                            outputs: [],
-                            tags: [],
-                            type: 'group',
-                        },
-                    };
-
-                    flow.nodes.forEach((node) => {
-                        const newId = crypto.randomUUID();
-                        nodeIdMap[node.id] = newId;
-
-                        mappedNodes.push({
-                            id: newId,
-                            data: {
-                                config: node.config,
-                                graphics: node.graphics,
-                                id: newId,
-                                inputs: node.inputs,
-                                name: node.name,
-                                outputs: node.outputs,
-                                tags: node.tags,
-                                type: node.type,
-                            },
-                            parentId: subflowNode.id,
-                            extent: 'parent',
-                            position: {
-                                x: node.graphics.x,
-                                y: node.graphics.y,
-                            },
-                            type: 'General',
-                        });
-                    });
-
-                    const mappedEdges = flow.edges.map(
-                        (edge) =>
-                            ({
-                                ...edge,
-                                id: crypto.randomUUID(),
-                                source: nodeIdMap[edge.source],
-                                target: nodeIdMap[edge.target],
-                                animated: true,
-                                style: { stroke: '#FFE599' },
-                            }) as Edge,
-                    );
-
-                    addNodes([subflowNode, ...mappedNodes]);
-
-                    addEdges(mappedEdges);
-                } else if (transferType === 'script_graph/blueprint') {
-                    const blueprintString =
-                        event.dataTransfer.getData(transferType);
-                    const blueprint = JSON.parse(
-                        blueprintString,
-                    ) as SerializedSGNode;
-
-                    if (blueprint.config.fields.some((f) => f.required)) {
-                        setDroppedBlueprint({
-                            id: crypto.randomUUID(),
-                            data: blueprint,
-                            position,
-                            type:
-                                blueprint.type === 'ForEach'
-                                    ? 'ForEach'
-                                    : 'General',
-                            width: 200,
-                            height: 80,
-                        });
-                    } else {
-                        addNodes({
-                            id: crypto.randomUUID(),
-                            data: blueprint,
-                            position,
-                            type:
-                                blueprint.type === 'ForEach'
-                                    ? 'ForEach'
-                                    : 'General',
-                            width: 200,
-                            height: 80,
-                        });
-                    }
-                } else if (transferType === 'script_graph/special') {
-                    const newId = crypto.randomUUID();
-                    addNodes({
-                        id: newId,
-                        data: {
-                            config: {
-                                fields: [],
-                            },
-                            graphics: { h: 0, w: 0, x: 0, y: 0 },
-                            id: newId,
-                            inputs: [
-                                {
-                                    type: 'void',
-                                },
-                            ],
-                            name: 'ForEach',
-                            type: 'ForEach',
-                            outputs: [
-                                {
-                                    type: 'void',
-                                },
-                            ],
-                            tags: [],
-                        } as SerializedSGNode,
-                        position,
-                        type: event.dataTransfer.getData(transferType),
-                        width: 400,
-                        height: 400,
-                    });
-                }
-            }
-        },
-        [screenToFlowPosition, addNodes, addEdges],
-    );
+    const dropHandler = useDropHandler(afterDrop, -100, -40, undefined);
 
     const onNodesChange = useCallback(
         (changes: NodeChange<Node<SerializedSGNode>>[]) =>
@@ -349,6 +159,8 @@ const FlowEditor = () => {
         () => ({
             General: GeneralNode,
             ForEach: ForEachNode,
+            Input: InputNode,
+            Template: TemplateNode,
         }),
         [],
     );
@@ -392,12 +204,20 @@ const FlowEditor = () => {
                                         handleType: params.handleType,
                                         io: ancestorOutput.elements,
                                         nodeId: params.nodeId,
-                                        parentId: source.parentId,
+                                        parentId: source.id,
                                     });
                                     return;
                                 }
                             }
                         }
+                    } else if (source.type === 'Input') {
+                        setConnectionEstablish({
+                            handleType: params.handleType,
+                            io: source.data.outputs[parseInt(params.handleId)],
+                            nodeId: params.nodeId,
+                            parentId: source.id,
+                        });
+                        return;
                     }
 
                     const output =
@@ -459,7 +279,7 @@ const FlowEditor = () => {
                     edges={edges}
                     colorMode="dark"
                     fitView
-                    onDrop={onDrop}
+                    onDrop={dropHandler}
                     onDragOver={onDragOver}
                     onNodesChange={onNodesChange}
                     onEdgesChange={onEdgesChange}
@@ -485,103 +305,98 @@ const FlowEditor = () => {
                                 flow={flow}
                                 onSave={(name) => {
                                     if (project && flow) {
+                                        const templateNodeIds = new Set<string>(
+                                            nodes
+                                                .filter(
+                                                    (n) =>
+                                                        n.type === 'Template',
+                                                )
+                                                .map((n) => n.id),
+                                        );
+
+                                        const nodesToSave =
+                                            subflowRequirementSorting(
+                                                nodes.filter((n) =>
+                                                    n.parentId
+                                                        ? !templateNodeIds.has(
+                                                              n.parentId,
+                                                          )
+                                                        : true,
+                                                ),
+                                            );
+
                                         window.api
                                             .updateProject({
                                                 ...project,
                                                 flows: project.flows.map(
                                                     (f) => {
                                                         if (f.id !== flowId) {
-                                                            return flow;
+                                                            return f;
                                                         }
                                                         return {
-                                                            id: f.id,
-                                                            edges: edges.map(
-                                                                (edge) => ({
-                                                                    id: edge.id,
-                                                                    source: edge.source,
-                                                                    sourceHandle:
-                                                                        edge.sourceHandle as string,
-                                                                    target: edge.target,
-                                                                    targetHandle:
-                                                                        edge.targetHandle as string,
-                                                                }),
-                                                            ),
+                                                            ...flow,
                                                             name,
-                                                            nodes: nodes
+                                                            edges: edges
                                                                 .filter(
-                                                                    (node) =>
-                                                                        node
-                                                                            .data
-                                                                            .type !==
-                                                                        'group',
+                                                                    (e) =>
+                                                                        !templateNodeIds.has(
+                                                                            e.source,
+                                                                        ) &&
+                                                                        nodesToSave.some(
+                                                                            (
+                                                                                n,
+                                                                            ) =>
+                                                                                e.source ===
+                                                                                    n.id ||
+                                                                                e.target ===
+                                                                                    n.id,
+                                                                        ),
                                                                 )
                                                                 .map(
-                                                                    (node) => ({
-                                                                        config: node
-                                                                            .data
-                                                                            .config as NodeConfig,
-                                                                        graphics:
-                                                                            {
-                                                                                x: node
-                                                                                    .position
-                                                                                    .x,
-                                                                                y: node
-                                                                                    .position
-                                                                                    .y,
-                                                                                w: node.width!,
-                                                                                h: node.height!,
-                                                                            },
-                                                                        tags: [],
-                                                                        id: node.id,
-                                                                        inputs: node
-                                                                            .data
-                                                                            .inputs as IO[],
-                                                                        name: node
-                                                                            .data
-                                                                            .name as string,
-                                                                        outputs:
-                                                                            node
-                                                                                .data
-                                                                                .outputs as IO[],
-                                                                        type: node
-                                                                            .data
-                                                                            .type as string,
-                                                                        parentId:
-                                                                            node.parentId,
+                                                                    (edge) => ({
+                                                                        id: edge.id,
+                                                                        source: edge.source,
+                                                                        sourceHandle:
+                                                                            edge.sourceHandle as string,
+                                                                        target: edge.target,
+                                                                        targetHandle:
+                                                                            edge.targetHandle as string,
                                                                     }),
                                                                 ),
-                                                            metaNodes: nodes
-                                                                .filter(
-                                                                    (node) =>
+                                                            nodes: nodesToSave.map(
+                                                                (node) => ({
+                                                                    config: node
+                                                                        .data
+                                                                        .config as NodeConfig,
+                                                                    graphics: {
+                                                                        x: node
+                                                                            .position
+                                                                            .x,
+                                                                        y: node
+                                                                            .position
+                                                                            .y,
+                                                                        w: node.width!,
+                                                                        h: node.height!,
+                                                                    },
+                                                                    tags: [],
+                                                                    id: node.id,
+                                                                    inputs: node
+                                                                        .data
+                                                                        .inputs as IO[],
+                                                                    name: node
+                                                                        .data
+                                                                        .name as string,
+                                                                    outputs:
                                                                         node
                                                                             .data
-                                                                            .type ===
-                                                                        'group',
-                                                                )
-                                                                .map(
-                                                                    (node) =>
-                                                                        ({
-                                                                            graphics:
-                                                                                {
-                                                                                    x: node
-                                                                                        .position
-                                                                                        .x,
-                                                                                    y: node
-                                                                                        .position
-                                                                                        .y,
-                                                                                    w: node.width!,
-                                                                                    h: node.height!,
-                                                                                },
-                                                                            tags: [],
-                                                                            id: node.id,
-                                                                            name: node
-                                                                                .data
-                                                                                .name as string,
-                                                                            type: node
-                                                                                .data
-                                                                                .type as string,
-                                                                        }) as MetaNode,
-                                                                ),
+                                                                            .outputs as IO[],
+                                                                    type: node
+                                                                        .data
+                                                                        .type as string,
+                                                                    parentId:
+                                                                        node.parentId,
+                                                                }),
+                                                            ),
                                                         };
                                                     },
                                                 ),
@@ -612,3 +427,40 @@ const FlowEditor = () => {
 };
 
 export default FlowEditor;
+
+export function subflowRequirementSorting(
+    nodes: Node<SerializedSGNode>[],
+): Node<SerializedSGNode>[] {
+    const nodeMap = new Map<string, Node<SerializedSGNode>>();
+    const childrenMap = new Map<
+        string | null | undefined,
+        Node<SerializedSGNode>[]
+    >();
+
+    // Index nodes and group children
+    for (const node of nodes) {
+        nodeMap.set(node.id, node);
+
+        const parent = node.parentId ?? null; // normalize undefined → null
+        if (!childrenMap.has(parent)) {
+            childrenMap.set(parent, []);
+        }
+        childrenMap.get(parent)!.push(node);
+    }
+
+    const sorted: Node<SerializedSGNode>[] = [];
+
+    // Depth-first walk to ensure parents come before children
+    const dfs = (parentId: string | null) => {
+        const children = childrenMap.get(parentId) || [];
+        for (const child of children) {
+            sorted.push(child);
+            dfs(child.id);
+        }
+    };
+
+    // Start from all root nodes (those without parentNode)
+    dfs(null);
+
+    return sorted;
+}

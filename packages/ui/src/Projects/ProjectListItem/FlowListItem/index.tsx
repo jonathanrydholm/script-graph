@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import type { ProjectConfig, ProjectFlow } from '@script_graph/general-types';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Play, Workflow } from 'lucide-react';
+import { Play, Workflow, Copy } from 'lucide-react';
 import { useCallback, useContext, useState } from 'react';
 import { NodeLogContext } from '../../../Providers/NodeLogs';
 import { useSnackbar } from 'notistack';
@@ -80,24 +80,29 @@ export const FlowListItem = ({ flow, project }: IFlowListItem) => {
             <ListItem
                 onContextMenu={handleContextMenu}
                 disablePadding
-                draggable
+                draggable={flow.type === 'template'}
                 onDragStart={(e) => {
                     e.stopPropagation();
                     e.dataTransfer.setData(
-                        'script_graph/flow',
-                        JSON.stringify(flow),
+                        'script_graph/template',
+                        JSON.stringify({
+                            flow,
+                            project,
+                        }),
                     );
                 }}
                 secondaryAction={
-                    <Tooltip title="Execute flow">
-                        <IconButton onClick={executeFlow} size="small">
-                            {loading ? (
-                                <CircularProgress size={24} />
-                            ) : (
-                                <Play color="#359A84" />
-                            )}
-                        </IconButton>
-                    </Tooltip>
+                    flow.type === 'executable' ? (
+                        <Tooltip title="Execute flow">
+                            <IconButton onClick={executeFlow} size="small">
+                                {loading ? (
+                                    <CircularProgress size={24} />
+                                ) : (
+                                    <Play color="#359A84" />
+                                )}
+                            </IconButton>
+                        </Tooltip>
+                    ) : undefined
                 }
             >
                 <ListItemButton
@@ -111,9 +116,19 @@ export const FlowListItem = ({ flow, project }: IFlowListItem) => {
                     }}
                 >
                     <ListItemIcon>
-                        <Workflow
-                            color={flow.id === flowId ? '#FFE599' : '#AFAFB1'}
-                        />
+                        {flow.type === 'executable' ? (
+                            <Workflow
+                                color={
+                                    flow.id === flowId ? '#FFE599' : '#AFAFB1'
+                                }
+                            />
+                        ) : (
+                            <Copy
+                                color={
+                                    flow.id === flowId ? '#FFE599' : '#AFAFB1'
+                                }
+                            />
+                        )}
                     </ListItemIcon>
                     <ListItemText
                         primary={flow.name}

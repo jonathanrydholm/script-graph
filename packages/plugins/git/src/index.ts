@@ -41,8 +41,18 @@ const plugin: Plugin = {
             config: {
                 fields: [],
             },
-            execute: async () => {
+            execute: async (_, __, context) => {
+                context.streamLog({
+                    level: 'info',
+                    msg: 'Sleeping for 1000ms',
+                    nodeId: context.serializedNode.id,
+                });
                 await new Promise((r) => setTimeout(r, 1000));
+                context.streamLog({
+                    level: 'info',
+                    msg: 'Done sleeping',
+                    nodeId: context.serializedNode.id,
+                });
                 return [
                     {
                         type: 'void',

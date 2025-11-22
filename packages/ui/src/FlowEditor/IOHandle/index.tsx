@@ -1,6 +1,6 @@
 import { Tooltip } from '@mui/material';
 import type { IO } from '@script_graph/plugin-types';
-import { Handle, type HandleType } from '@xyflow/react';
+import { Handle, useNodeConnections, type HandleType } from '@xyflow/react';
 import { Position } from 'reactflow';
 import { useIOState } from '../Hooks';
 import { useMemo } from 'react';
@@ -11,6 +11,7 @@ interface IIOHandle {
     io: IO;
     index: number;
     handleType: HandleType;
+    maxConnections?: number;
 }
 
 export const IOHandle = ({
@@ -19,6 +20,7 @@ export const IOHandle = ({
     index,
     handleType,
     parentId,
+    maxConnections,
 }: IIOHandle) => {
     const { ioColor, ioState } = useIOState(
         nodeId,
@@ -28,8 +30,16 @@ export const IOHandle = ({
         parentId,
     );
 
+    const connections = useNodeConnections({
+        handleType,
+    });
+
     return useMemo(() => {
         const size = 12;
+        const maxConnectionsReached =
+            maxConnections !== undefined
+                ? connections.length >= maxConnections
+                : false;
         return (
             <Tooltip title={io.type}>
                 <Handle
@@ -37,7 +47,9 @@ export const IOHandle = ({
                     position={
                         handleType === 'source' ? Position.Right : Position.Left
                     }
-                    isConnectable={ioState !== 'not_available'}
+                    isConnectable={
+                        !maxConnectionsReached || ioState !== 'not_available'
+                    }
                     id={`${index}`}
                     style={{
                         width: size,
@@ -55,5 +67,13 @@ export const IOHandle = ({
                 />
             </Tooltip>
         );
-    }, [ioColor, ioState, io.type, index, handleType]);
+    }, [
+        ioColor,
+        ioState,
+        io.type,
+        index,
+        handleType,
+        connections.length,
+        maxConnections,
+    ]);
 };

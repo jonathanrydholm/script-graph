@@ -56,5 +56,47 @@ export const corePlugin: LoadedPlugin = {
                 ];
             },
         },
+        {
+            config: {
+                fields: [],
+            },
+            inputs: [
+                {
+                    type: 'inherit',
+                },
+            ],
+            outputs: [
+                {
+                    type: 'inherit',
+                },
+            ],
+            name: 'Input',
+            type: 'Input',
+            tags: [],
+            execute: async (io) => {
+                return io;
+            },
+        },
+        {
+            config: {
+                fields: [],
+            },
+            inputs: [
+                {
+                    type: 'inherit',
+                },
+            ],
+            outputs: [
+                {
+                    type: 'inherit',
+                },
+            ],
+            name: 'Template',
+            type: 'Template',
+            tags: [],
+            execute: async (io) => {
+                return io;
+            },
+        },
     ],
 };

@@ -31,6 +31,9 @@ contextBridge.exposeInMainWorld('api', {
     executeFlow: (projectId: string, flowId: string) =>
         ipcRenderer.invoke('executeFlow', projectId, flowId),
 
+    getFlow: (projectId: string, flowId: string) =>
+        ipcRenderer.invoke('getFlow', projectId, flowId),
+
     onNodeLog: (callback: (stringifiedLog: string) => void) => {
         const listener = (_: unknown, value: string) => callback(value);
 

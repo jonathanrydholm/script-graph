@@ -3,7 +3,10 @@ import { Outlet, Route, Routes } from 'react-router-dom';
 import FlowEditor from './FlowEditor';
 import Projects from './Projects';
 import { useEffect, useState } from 'react';
-import { type ProjectConfig } from '@script_graph/general-types';
+import {
+    type ProjectConfig,
+    type ProjectFlow,
+} from '@script_graph/general-types';
 import { NodeProvider } from './FlowEditor/NodeProvider';
 
 declare global {
@@ -16,6 +19,11 @@ declare global {
             subscribeToProjects: (
                 callback: (stringifiedProjects: string) => void,
             ) => () => void;
+
+            getFlow: (
+                projectId: string,
+                flowId: string,
+            ) => Promise<ProjectFlow>;
 
             createProject: (project: ProjectConfig) => Promise<void>;
 

@@ -6,10 +6,15 @@ import { FlowRuntime } from '@script_graph/flow-runtime';
 import { PluginInstaller } from '@script_graph/plugin-installer';
 import {
     ProjectConfig,
+    ProjectFlow,
     SerializedPlugin,
     TimestampedNodeLog,
 } from '@script_graph/general-types';
-import { SGNode } from '@script_graph/plugin-types';
+import {
+    NodeConfigStringField,
+    SerializedSGNode,
+    SGNode,
+} from '@script_graph/plugin-types';
 
 @injectable()
 export class IpcHandler implements IIpcHandler {
@@ -75,13 +80,65 @@ export class IpcHandler implements IIpcHandler {
         });
 
         ipcMain.handle(
+            'getFlow',
+            async (_, projectId: string, flowId: string) => {
+                return this.projectService.getFlow(projectId, flowId);
+            },
+        );
+
+        ipcMain.handle(
             'executeFlow',
             async (_, projectId: string, flowId: string) => {
                 const flow = this.projectService.getFlow(projectId, flowId);
                 if (flow) {
+                    const recursivelyFetchTemplateNodes = (
+                        processFlow: ProjectFlow,
+                    ): ProjectFlow[] => {
+                        const templateFlows = processFlow.nodes
+                            .filter((n) => n.type === 'Template')
+                            .map((template) => {
+                                const templateFlowId = (
+                                    template.config.fields.find(
+                                        (field) =>
+                                            field.type === 'string' &&
+                                            field.field === 'flowId',
+                                    ) as NodeConfigStringField
+                                )?.value;
+                                const templateProjectId = (
+                                    template.config.fields.find(
+                                        (field) =>
+                                            field.type === 'string' &&
+                                            field.field === 'projectId',
+                                    ) as NodeConfigStringField
+                                )?.value;
+                                if (templateFlowId && templateProjectId) {
+                                    return this.projectService.getFlow(
+                                        templateProjectId,
+                                        templateFlowId,
+                                    );
+                                }
+                            })
+                            .filter((f) => f);
+
+                        return [
+                            ...templateFlows,
+                            ...templateFlows.flatMap(
+                                recursivelyFetchTemplateNodes,
+                            ),
+                        ];
+                    };
+
+                    const templateFlows = recursivelyFetchTemplateNodes(flow);
+
                     await this.flowRuntime.ExecuteFlow(
-                        flow.nodes,
-                        flow.edges,
+                        [
+                            ...flow.nodes,
+                            ...templateFlows.flatMap((f) => f.nodes),
+                        ],
+                        [
+                            ...flow.edges,
+                            ...templateFlows.flatMap((f) => f.edges),
+                        ],
                         (log) => {
                             this.app.getMainWindow().webContents.send(
                                 'node-log',

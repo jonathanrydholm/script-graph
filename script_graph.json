@@ -1,28 +1,31 @@
 {
     "flows": [
         {
-            "id": "4111e97a-18d4-4510-bef0-bcea1f58c0ad",
+            "id": "b58db690-ba96-4755-b310-e7a2b1793809",
             "edges": [
                 {
-                    "id": "xy-edge__f72307e6-cdc5-420f-ba37-7a8287e5c5de0-f15719d1-2f10-4769-8e7b-7071ed9c9c470",
-                    "source": "f72307e6-cdc5-420f-ba37-7a8287e5c5de",
+                    "id": "xy-edge__93d5dc26-36cb-48df-b70f-96200b837f980-ff6a659f-dd6d-4e3d-a9a2-10012d4dff680",
+                    "source": "93d5dc26-36cb-48df-b70f-96200b837f98",
                     "sourceHandle": "0",
-                    "target": "f15719d1-2f10-4769-8e7b-7071ed9c9c47",
+                    "target": "ff6a659f-dd6d-4e3d-a9a2-10012d4dff68",
                     "targetHandle": "0"
                 }
             ],
-            "name": "Test",
+            "name": "Exec",
+            "type": "executable",
             "nodes": [
                 {
                     "config": {
                         "fields": []
                     },
                     "graphics": {
-                        "x": 65.90606271163638,
-                        "y": 113.1324624836283
+                        "x": -4.808075644695315,
+                        "y": 77.38011301100114,
+                        "w": 200,
+                        "h": 80
                     },
                     "tags": [],
-                    "id": "f72307e6-cdc5-420f-ba37-7a8287e5c5de",
+                    "id": "93d5dc26-36cb-48df-b70f-96200b837f98",
                     "inputs": [],
                     "name": "Entrypoint",
                     "outputs": [
@@ -34,34 +37,236 @@
                 },
                 {
                     "config": {
+                        "fields": [
+                            {
+                                "field": "flowId",
+                                "type": "string",
+                                "value": "406d61f9-0dde-4405-ab48-721ef3b0bacf",
+                                "required": true
+                            },
+                            {
+                                "field": "projectId",
+                                "type": "string",
+                                "value": "f3dabc7e-266d-4418-8f96-014aeeeee1c0",
+                                "required": true
+                            }
+                        ]
+                    },
+                    "graphics": {
+                        "x": 205.916278408883,
+                        "y": -147.2580243800092,
+                        "w": 1886,
+                        "h": 329
+                    },
+                    "tags": [],
+                    "id": "ff6a659f-dd6d-4e3d-a9a2-10012d4dff68",
+                    "inputs": [],
+                    "name": "Project X -> Template",
+                    "outputs": [],
+                    "type": "Template"
+                }
+            ]
+        },
+        {
+            "id": "406d61f9-0dde-4405-ab48-721ef3b0bacf",
+            "edges": [
+                {
+                    "id": "xy-edge__e53d3d5e-9023-4c94-bdcc-5ab55de0eff00-dc8c2056-9cc7-493a-bade-3d4f61d075bc0",
+                    "source": "e53d3d5e-9023-4c94-bdcc-5ab55de0eff0",
+                    "sourceHandle": "0",
+                    "target": "dc8c2056-9cc7-493a-bade-3d4f61d075bc",
+                    "targetHandle": "0"
+                },
+                {
+                    "id": "xy-edge__edafe19b-a6e4-448b-9542-53f60512bf8e0-e53d3d5e-9023-4c94-bdcc-5ab55de0eff00",
+                    "source": "edafe19b-a6e4-448b-9542-53f60512bf8e",
+                    "sourceHandle": "0",
+                    "target": "e53d3d5e-9023-4c94-bdcc-5ab55de0eff0",
+                    "targetHandle": "0"
+                }
+            ],
+            "name": "Template",
+            "type": "template",
+            "nodes": [
+                {
+                    "config": {
                         "fields": []
                     },
                     "graphics": {
-                        "x": 259.4698493523563,
-                        "y": 216.73865310096798,
-                        "w": 250,
-                        "h": 150
+                        "x": -143.9196502102493,
+                        "y": 50.662319155408156,
+                        "w": 200,
+                        "h": 80
                     },
                     "tags": [],
-                    "id": "f15719d1-2f10-4769-8e7b-7071ed9c9c47",
+                    "id": "edafe19b-a6e4-448b-9542-53f60512bf8e",
+                    "inputs": [
+                        {
+                            "type": "inherit"
+                        }
+                    ],
+                    "name": "Input",
+                    "outputs": [
+                        {
+                            "type": "inherit"
+                        }
+                    ],
+                    "type": "Input"
+                },
+                {
+                    "config": {
+                        "fields": []
+                    },
+                    "graphics": {
+                        "x": 37.594019126552425,
+                        "y": 125.4607063754741,
+                        "w": 200,
+                        "h": 80
+                    },
+                    "tags": [],
+                    "id": "e53d3d5e-9023-4c94-bdcc-5ab55de0eff0",
                     "inputs": [
                         {
                             "type": "void"
                         }
                     ],
-                    "name": "FileList",
+                    "name": "Sleep",
                     "outputs": [
                         {
-                            "type": "array",
-                            "elements": {
-                                "type": "string"
-                            }
+                            "type": "void"
                         }
                     ],
-                    "type": "file_list"
+                    "type": "sleep"
+                },
+                {
+                    "config": {
+                        "fields": [
+                            {
+                                "field": "flowId",
+                                "type": "string",
+                                "value": "c5d5853c-1676-4d0e-bb01-4be6c73ed571",
+                                "required": true
+                            },
+                            {
+                                "field": "projectId",
+                                "type": "string",
+                                "value": "f3dabc7e-266d-4418-8f96-014aeeeee1c0",
+                                "required": true
+                            }
+                        ]
+                    },
+                    "graphics": {
+                        "x": 315.3020560755489,
+                        "y": 166.75475522943924,
+                        "w": 632,
+                        "h": 122
+                    },
+                    "tags": [],
+                    "id": "dc8c2056-9cc7-493a-bade-3d4f61d075bc",
+                    "inputs": [],
+                    "name": "Project X -> Template deep",
+                    "outputs": [],
+                    "type": "Template"
+                }
+            ]
+        },
+        {
+            "id": "c5d5853c-1676-4d0e-bb01-4be6c73ed571",
+            "edges": [
+                {
+                    "id": "xy-edge__566b80c2-1959-4302-b9e4-2cedacbc03790-ee61a065-4d25-42d1-af87-8bee83a077350",
+                    "source": "566b80c2-1959-4302-b9e4-2cedacbc0379",
+                    "sourceHandle": "0",
+                    "target": "ee61a065-4d25-42d1-af87-8bee83a07735",
+                    "targetHandle": "0"
+                },
+                {
+                    "id": "xy-edge__ee61a065-4d25-42d1-af87-8bee83a077350-63ce8769-bf1b-4b9f-961e-cd5f0595bf230",
+                    "source": "ee61a065-4d25-42d1-af87-8bee83a07735",
+                    "sourceHandle": "0",
+                    "target": "63ce8769-bf1b-4b9f-961e-cd5f0595bf23",
+                    "targetHandle": "0"
                 }
             ],
-            "metaNodes": []
+            "name": "Template deep",
+            "type": "template",
+            "nodes": [
+                {
+                    "config": {
+                        "fields": []
+                    },
+                    "graphics": {
+                        "x": -202.39461243624706,
+                        "y": 27.601770671916107,
+                        "w": 200,
+                        "h": 80
+                    },
+                    "tags": [],
+                    "id": "566b80c2-1959-4302-b9e4-2cedacbc0379",
+                    "inputs": [
+                        {
+                            "type": "inherit"
+                        }
+                    ],
+                    "name": "Input",
+                    "outputs": [
+                        {
+                            "type": "inherit"
+                        }
+                    ],
+                    "type": "Input"
+                },
+                {
+                    "config": {
+                        "fields": []
+                    },
+                    "graphics": {
+                        "x": -59.08977543168934,
+                        "y": 50.662319155408156,
+                        "w": 200,
+                        "h": 80
+                    },
+                    "tags": [],
+                    "id": "ee61a065-4d25-42d1-af87-8bee83a07735",
+                    "inputs": [
+                        {
+                            "type": "void"
+                        }
+                    ],
+                    "name": "Sleep",
+                    "outputs": [
+                        {
+                            "type": "void"
+                        }
+                    ],
+                    "type": "sleep"
+                },
+                {
+                    "config": {
+                        "fields": []
+                    },
+                    "graphics": {
+                        "x": 229.16708061196132,
+                        "y": 90.19468798425166,
+                        "w": 200,
+                        "h": 80
+                    },
+                    "tags": [],
+                    "id": "63ce8769-bf1b-4b9f-961e-cd5f0595bf23",
+                    "inputs": [
+                        {
+                            "type": "void"
+                        }
+                    ],
+                    "name": "Sleep",
+                    "outputs": [
+                        {
+                            "type": "void"
+                        }
+                    ],
+                    "type": "sleep"
+                }
+            ]
         }
     ],
     "id": "f3dabc7e-266d-4418-8f96-014aeeeee1c0",
